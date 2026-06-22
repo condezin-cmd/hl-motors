@@ -1,0 +1,1 @@
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\Windows\HL Motors\.next\cache\webpack\client-development\10.pack.gz_' -> 'C:\Users\Windows\HL Motors\.next\cache\webpack\client-development\10.pack.gz'

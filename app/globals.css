@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+/* HL Motors - sistema visual baseado na placa enviada:
+   preto profundo, vermelho vivo, branco sólido e formas retangulares. */
+@theme {
+  --font-sans: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+
+  --color-ink: #1c1c1b;
+  --color-ink-2: #111110;
+  --color-graphite: #242423;
+  --color-panel: #191918;
+  --color-panel-soft: #20201f;
+  --color-line: rgba(255, 255, 255, 0.18);
+  --color-platinum: #ffffff;
+  --color-mute: #b8b8b4;
+  --color-red: #e42321;
+  --color-red-bright: #ff2a27;
+  --color-ice: #e42321;
+  --color-diamond: #ffffff;
+  --color-gold: #e42321;
+  --color-spark: #ffffff;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-platinum);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+.font-display {
+  font-family: var(--font-display), "Arial Narrow", Impact, system-ui, sans-serif;
+}
+
+.font-tech {
+  font-family: var(--font-tech), var(--font-display), sans-serif;
+}
+
+.bg-aurora {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(228, 35, 33, 0.08), transparent 34rem),
+    linear-gradient(90deg, rgba(228, 35, 33, 0.05), transparent 32%),
+    var(--color-ink);
+}
+
+.bg-aurora::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 54px 54px;
+  mask-image: linear-gradient(to bottom, #000, transparent 72%);
+}
+
+.bg-aurora > * {
+  position: relative;
+  z-index: 1;
+}
+
+.brand-panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+}
+
+.brand-plate {
+  background:
+    linear-gradient(90deg, var(--color-red) 0 27%, transparent 27%),
+    var(--color-panel);
+  border: 7px solid #fff;
+}
+
+.brand-stripe {
+  position: relative;
+  background: var(--color-red);
+}
+
+.brand-stripe::before,
+.brand-stripe::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 4rem;
+  height: 100%;
+  background: var(--color-ink);
+}
+
+.brand-stripe::before {
+  left: 0;
+  clip-path: polygon(0 0, 100% 0, 30% 100%, 0 100%);
+}
+
+.brand-stripe::after {
+  right: 0;
+  clip-path: polygon(70% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.text-diamond,
+.text-chrome {
+  color: var(--color-platinum);
+}
+
+.glass,
+.glass-strong {
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+}
+
+.facet {
+  position: relative;
+}
+
+.facet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 1px solid rgba(228, 35, 33, 0.5);
+}
+
+.sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.sheen::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.32), transparent);
+  transform: skewX(-18deg);
+  transition: left 0.55s ease;
+}
+
+.sheen:hover::after {
+  left: 140%;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  animation: rise 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.speedline {
+  background-image: repeating-linear-gradient(
+    112deg,
+    transparent 0 14px,
+    rgba(228, 35, 33, 0.42) 14px 17px
+  );
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-ink);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-red);
+}

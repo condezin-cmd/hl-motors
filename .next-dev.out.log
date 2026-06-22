@@ -1,0 +1,30 @@
+
+> hl-motors@0.1.0 dev
+> next dev --port 3003
+
+   ▲ Next.js 15.5.19
+   - Local:        http://localhost:3003
+   - Network:      http://54.232.189.113:3003
+
+ ✓ Starting...
+ ✓ Ready in 4.7s
+ ○ Compiling / ...
+ ✓ Compiled / in 6.2s (647 modules)
+ GET / 200 in 7596ms
+ GET / 200 in 298ms
+ GET / 200 in 216ms
+ GET / 200 in 182ms
+ GET /?fresh=1 200 in 1331ms
+ ✓ Compiled in 1461ms (629 modules)
+ GET /?fresh=1 200 in 681ms
+ ✓ Compiled in 436ms (629 modules)
+ GET /?fresh=1 200 in 161ms
+ ✓ Compiled in 148ms (247 modules)
+ GET /?fresh=1 200 in 219ms
+ ✓ Compiled in 470ms (630 modules)
+ GET /?fresh=1 200 in 193ms
+ GET /?fresh=1 200 in 655ms
+ ✓ Compiled in 2.9s (630 modules)
+ ✓ Compiled in 820ms (630 modules)
+ ✓ Compiled in 368ms (630 modules)
+ ✓ Compiled in 6.4s (630 modules)
