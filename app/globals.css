@@ -59,7 +59,7 @@ body {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   opacity: 0.08;
   background-image:
@@ -67,11 +67,6 @@ body {
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 54px 54px;
   mask-image: linear-gradient(to bottom, #000, transparent 72%);
-}
-
-.bg-aurora > * {
-  position: relative;
-  z-index: 1;
 }
 
 .brand-panel {

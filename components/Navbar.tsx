@@ -35,6 +35,9 @@ export function Navbar() {
           <Link href="/#estoque" className="transition-colors hover:text-white">
             Estoque
           </Link>
+          <Link href="/#consignacao" className="text-[var(--color-red)] transition-colors hover:text-[var(--color-red-bright)]">
+            Venda seu carro
+          </Link>
           <Link href="/#qualidade" className="transition-colors hover:text-white">
             Empresa
           </Link>

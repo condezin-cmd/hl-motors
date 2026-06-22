@@ -9,6 +9,7 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/#destaques", label: "Destaques" },
   { href: "/#estoque", label: "Estoque" },
+  { href: "/#consignacao", label: "Venda seu carro" },
   { href: "/#qualidade", label: "Empresa" },
   { href: "/#contato", label: "Contato" },
 ];

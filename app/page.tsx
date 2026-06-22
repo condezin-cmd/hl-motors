@@ -5,6 +5,7 @@ import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { CarCatalog } from "@/components/CarCatalog";
 import { CarCard } from "@/components/CarCard";
 import { FeaturedCar } from "@/components/FeaturedCar";
+import { ConsignForm } from "@/components/ConsignForm";
 import { cars, brands } from "@/lib/cars";
 import { site, whatsappLink } from "@/lib/site";
 
@@ -112,11 +113,53 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="contato" className="px-4 pb-20">
-          <div className="mx-auto grid max-w-6xl gap-5 md:grid-cols-3">
-            <ContactCard title="Endereço" text={site.address} />
-            <ContactCard title="WhatsApp" text={site.whatsappDisplay} />
-            <ContactCard title="Horários" text={site.hours} />
+        <section id="consignacao" className="border-y border-white/10 bg-black/25 px-4 py-20">
+          <div className="mx-auto grid max-w-6xl items-start gap-10 lg:grid-cols-[1fr_1.05fr]">
+            <div>
+              <span className="font-tech inline-flex bg-[var(--color-red)] px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.22em] text-white">
+                Venda ou consigne
+              </span>
+              <h2 className="font-display mt-5 text-5xl font-black uppercase leading-[0.9] sm:text-6xl">
+                Quer vender
+                <br />
+                <span className="text-[var(--color-red)]">seu carro?</span>
+              </h2>
+              <p className="mt-5 max-w-md text-lg text-[var(--color-mute)]">
+                A {site.name} vende o seu veículo por você. Você deixa em
+                consignação, a gente cuida de tudo — anúncio, fotos, atendimento
+                e negociação — e você recebe quando vender. Sem dor de cabeça.
+              </p>
+              <ul className="mt-7 space-y-3">
+                {[
+                  "Avaliação justa e transparente",
+                  "Exposição na loja e no site",
+                  "Cuidamos de toda a negociação",
+                  "Documentação e segurança garantidas",
+                ].map((b) => (
+                  <li key={b} className="flex items-center gap-3 text-sm font-semibold text-white">
+                    <span className="h-2 w-6 shrink-0 bg-[var(--color-red)]" />
+                    {b}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <ConsignForm />
+          </div>
+        </section>
+
+        <section id="contato" className="px-4 py-20">
+          <div className="mx-auto max-w-6xl">
+            <SectionHeader
+              eyebrow="Contato"
+              title="Fale com a loja"
+              subtitle="Estamos prontos para te atender."
+            />
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              <ContactCard title="Endereço" text={site.address} />
+              <ContactCard title="WhatsApp" text={site.whatsappDisplay} />
+              <ContactCard title="Horários" text={site.hours} />
+            </div>
           </div>
         </section>
       </main>
