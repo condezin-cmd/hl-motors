@@ -3,82 +3,59 @@ import { site, whatsappLink } from "@/lib/site";
 
 export function Hero() {
   return (
-    <section className="relative flex items-center overflow-hidden px-4 pb-12 pt-28">
-      <div className="speedline pointer-events-none absolute inset-x-0 top-32 h-20 opacity-20" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1.5 bg-[var(--color-red)]" />
+    <section className="relative isolate flex min-h-[90vh] items-center overflow-hidden pb-20">
+      {/* Fundo: frente do Dodge Challenger preto */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/hero/challenger.jpg"
+        alt="Dodge Challenger preto"
+        className="absolute inset-0 -z-10 h-full w-full object-cover object-[60%_center]"
+      />
+      {/* Escurece só o lado esquerdo (texto), mantém o carro visível */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black via-black/70 to-transparent" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+      <div className="speedline pointer-events-none absolute inset-0 -z-10 opacity-10" />
 
-      <div className="relative mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="reveal">
-          <span className="font-tech inline-flex bg-[var(--color-red)] px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-white">
-            Seminovos em {site.city}/{site.state}
+      <div className="mx-auto w-full max-w-6xl px-4 pt-28">
+        <div className="reveal max-w-2xl">
+          <span className="font-tech inline-flex items-center gap-2 bg-[var(--color-red)] px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-white">
+            <span className="h-1.5 w-1.5 rounded-full bg-white" />
+            Seminovos selecionados · {site.city}/{site.state}
           </span>
 
-          <h1 className="font-display mt-6 max-w-xl text-6xl font-black uppercase leading-[0.88] sm:text-7xl lg:text-8xl">
+          <h1 className="font-display mt-6 text-5xl font-black uppercase leading-[0.88] drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] sm:text-7xl lg:text-8xl">
             Estoque forte.
             <br />
-            Atendimento direto.
+            <span className="text-[var(--color-red)]">Atendimento</span> direto.
           </h1>
 
-          <p className="mt-6 max-w-lg text-lg leading-relaxed text-[var(--color-mute)]">
-            A {site.name} seleciona veículos com procedência, documentação em
-            dia e negociação rápida pelo WhatsApp.
+          <p className="mt-6 max-w-lg text-base leading-relaxed text-zinc-300 drop-shadow sm:text-lg">
+            Veículos com procedência, documentação em dia e negociação rápida
+            pelo WhatsApp. A {site.name} é em {site.city}/{site.state}.
           </p>
 
-          <div className="mt-9 flex flex-wrap gap-3">
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
-              href="#destaques"
-              className="sheen bg-white px-7 py-4 text-sm font-black uppercase tracking-wide text-[var(--color-ink)] transition-colors hover:bg-zinc-200"
+              href="#estoque"
+              className="sheen group inline-flex items-center justify-center gap-2.5 bg-[var(--color-red)] px-8 py-4 text-sm font-black uppercase tracking-wide text-white transition-colors hover:bg-[var(--color-red-bright)]"
             >
-              Ver destaques
+              Ver estoque completo
+              <span className="transition-transform group-hover:translate-x-1">→</span>
             </Link>
             <a
               href={whatsappLink(`Olá, ${site.name}! Quero ajuda para escolher um carro.`)}
               target="_blank"
               rel="noreferrer"
-              className="border-2 border-white px-7 py-4 text-sm font-black uppercase tracking-wide text-white transition-colors hover:border-[var(--color-red)] hover:bg-[var(--color-red)]"
+              className="inline-flex items-center justify-center gap-2.5 border-2 border-white/80 bg-black/20 px-8 py-4 text-sm font-black uppercase tracking-wide text-white backdrop-blur transition-colors hover:bg-white hover:text-[var(--color-ink)]"
             >
-              Chamar no WhatsApp
-            </a>
-          </div>
-
-          <dl className="mt-12 grid max-w-lg grid-cols-3 divide-x divide-white/10 border-l-4 border-[var(--color-red)] bg-black/30 py-5">
-            <Stat n="100%" l="Procedência" />
-            <Stat n="48h" l="Crédito" />
-            <Stat n="5.0" l="Atendimento" />
-          </dl>
-        </div>
-
-        <div className="reveal relative" style={{ animationDelay: "0.12s" }}>
-          <div className="brand-plate p-3 shadow-[0_22px_70px_rgba(0,0,0,0.45)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/brand/hl-motors-placa.png"
-              alt="Placa HL Motors"
-              className="h-auto w-full object-contain"
-            />
-          </div>
-
-          <div className="brand-stripe mt-8 flex min-h-24 items-center justify-center px-20 py-5 text-center">
-            <a
-              href={whatsappLink(`Olá, ${site.name}! Vim pelo site.`)}
-              target="_blank"
-              rel="noreferrer"
-              className="font-display text-4xl font-black italic leading-none tracking-wide text-white sm:text-5xl"
-            >
-              {site.whatsappDisplay}
+              <svg viewBox="0 0 32 32" className="h-5 w-5 fill-current" aria-hidden>
+                <path d="M16 3C9 3 3.5 8.5 3.5 15.5c0 2.3.6 4.5 1.8 6.4L3 29l7.3-2.2c1.8 1 3.8 1.5 5.7 1.5 7 0 12.5-5.5 12.5-12.5S23 3 16 3zm0 22.7c-1.7 0-3.4-.5-4.9-1.3l-.4-.2-4.3 1.3 1.3-4.2-.3-.4c-1-1.6-1.5-3.4-1.5-5.3C5.6 9.7 10.3 5 16 5s10.4 4.7 10.4 10.5S21.7 25.7 16 25.7z" />
+              </svg>
+              Falar no WhatsApp
             </a>
           </div>
         </div>
       </div>
     </section>
-  );
-}
-
-function Stat({ n, l }: { n: string; l: string }) {
-  return (
-    <div className="px-5">
-      <dt className="font-display text-3xl font-black text-white">{n}</dt>
-      <dd className="text-xs font-semibold uppercase tracking-wide text-[var(--color-mute)]">{l}</dd>
-    </div>
   );
 }

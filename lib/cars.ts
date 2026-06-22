@@ -18,7 +18,7 @@ export const cars: Car[] = [
     "preco": 349900,
     "cambio": "Automático",
     "combustivel": "Gasolina",
-    "cor": "Cinza",
+    "cor": "Verde",
     "portas": 2,
     "status": "disponivel",
     "destaque": true,

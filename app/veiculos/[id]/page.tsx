@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cars, getCar } from "@/lib/cars";
@@ -7,10 +8,36 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { CarImage } from "@/components/CarImage";
+import { Gallery } from "@/components/Gallery";
 import { StatusBadge } from "@/components/StatusBadge";
 
 export function generateStaticParams() {
   return cars.map((c) => ({ id: c.id }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const car = getCar(id);
+  if (!car) return {};
+  const title = `${car.marca} ${car.modelo} ${car.versao} ${car.ano}`;
+  const desc = `${car.marca} ${car.modelo} ${car.ano} · ${km(car.km)} · ${brl(
+    car.preco
+  )} · ${car.cambio} · ${car.combustivel}. ${site.name}, ${site.city}/${site.state}.`;
+  return {
+    title,
+    description: desc,
+    alternates: { canonical: `/veiculos/${car.id}` },
+    openGraph: {
+      title: `${title} — ${brl(car.preco)}`,
+      description: desc,
+      type: "website",
+      images: car.fotos?.length ? [{ url: car.fotos[0] }] : undefined,
+    },
+  };
 }
 
 export default async function VeiculoPage({
@@ -33,8 +60,47 @@ export default async function VeiculoPage({
     ["Portas", `${car.portas} portas`],
   ];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Vehicle",
+    name: `${car.marca} ${car.modelo} ${car.versao}`,
+    brand: { "@type": "Brand", name: car.marca },
+    model: car.modelo,
+    vehicleModelDate: String(car.ano),
+    productionDate: String(car.anoFab),
+    mileageFromOdometer: {
+      "@type": "QuantitativeValue",
+      value: car.km,
+      unitCode: "KMT",
+    },
+    fuelType: car.combustivel,
+    vehicleTransmission: car.cambio,
+    color: car.cor,
+    numberOfDoors: car.portas,
+    itemCondition: "https://schema.org/UsedCondition",
+    image: (car.fotos ?? []).map((f) => `${site.url}${f}`),
+    offers: {
+      "@type": "Offer",
+      price: car.preco,
+      priceCurrency: "BRL",
+      availability:
+        car.status === "vendido"
+          ? "https://schema.org/SoldOut"
+          : "https://schema.org/InStock",
+      seller: {
+        "@type": "AutoDealer",
+        name: site.name,
+        areaServed: `${site.city}/${site.state}`,
+      },
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
       <main className="px-4 pb-10 pt-28">
         <div className="mx-auto max-w-6xl">
@@ -46,10 +112,17 @@ export default async function VeiculoPage({
           </Link>
 
           <div className="mt-6 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-            <div className="overflow-hidden border border-white/15 bg-[var(--color-panel)] p-1.5">
-              <div className="aspect-[16/10] overflow-hidden">
-                <CarImage car={car} rounded="rounded-none" />
-              </div>
+            <div>
+              {car.fotos && car.fotos.length > 0 ? (
+                <Gallery
+                  fotos={car.fotos}
+                  alt={`${car.marca} ${car.modelo} ${car.versao}`}
+                />
+              ) : (
+                <div className="aspect-[4/3] overflow-hidden border border-white/15">
+                  <CarImage car={car} rounded="rounded-none" />
+                </div>
+              )}
             </div>
 
             <aside className="brand-panel flex flex-col p-7">

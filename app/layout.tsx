@@ -18,12 +18,19 @@ const display = Saira_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: `${site.name} - Seminovos em ${site.city}/${site.state}`,
+  metadataBase: new URL(site.url),
+  title: {
+    default: `${site.name} - Seminovos em ${site.city}/${site.state}`,
+    template: `%s | ${site.name}`,
+  },
   description: `${site.name}: seminovos selecionados com procedência em ${site.city}. Atendimento direto pelo WhatsApp.`,
   openGraph: {
     title: `${site.name} - Seminovos em ${site.city}/${site.state}`,
     description: site.tagline,
     type: "website",
+    locale: "pt_BR",
+    siteName: site.name,
+    images: [{ url: "/hero/challenger.jpg", width: 1200, height: 630 }],
   },
 };
 

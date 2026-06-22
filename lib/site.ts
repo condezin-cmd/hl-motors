@@ -1,5 +1,6 @@
 export const site = {
   name: "HL Motors",
+  url: "https://hlmotors.mpbg.cloud",
   tagline: "Seminovos selecionados - Pinhais/PR",
   city: "Pinhais",
   state: "PR",

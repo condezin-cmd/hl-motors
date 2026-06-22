@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Footer } from "@/components/Footer";
@@ -42,35 +41,6 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="border-y border-white/10 bg-black/25 px-4 py-14">
-          <div className="mx-auto max-w-6xl">
-            <div className="flex flex-col justify-between gap-7 md:flex-row md:items-end">
-              <SectionHeader
-                eyebrow="Pesquise por marca"
-                title="Encontre pelo emblema"
-                subtitle="Acesso direto ao estoque por fabricante."
-              />
-              <Link
-                href="#estoque"
-                className="w-fit border border-white/20 px-5 py-3 text-sm font-black uppercase text-white transition-colors hover:border-[var(--color-red)] hover:bg-[var(--color-red)]"
-              >
-                Ver estoque completo
-              </Link>
-            </div>
-            <div className="mt-9 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-              {brands.map((brand) => (
-                <a
-                  key={brand}
-                  href="#estoque"
-                  className="brand-panel flex h-20 items-center justify-center px-3 text-center font-display text-2xl font-black uppercase text-white transition-colors hover:border-[var(--color-red)] hover:text-[var(--color-red)]"
-                >
-                  {brand}
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-
         <section id="qualidade" className="px-4 py-20">
           <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.95fr_1.05fr]">
             <div className="brand-panel overflow-hidden">
@@ -102,7 +72,7 @@ export default function Home() {
             <div className="grid gap-5 sm:grid-cols-2">
               <Trust title="Procedência" text="Laudo cautelar, documentação em dia e histórico verificado." />
               <Trust title="Financiamento" text="Simulação rápida com bancos parceiros e atendimento direto." />
-              <Trust title="Test-drive" text="Agendamento prático pelo WhatsApp da placa." />
+              <Trust title="Test-drive" text="Agendamento prático pelo WhatsApp." />
               <Trust title="Pós-venda" text="Relacionamento próximo para dúvidas depois da entrega." />
             </div>
           </div>
