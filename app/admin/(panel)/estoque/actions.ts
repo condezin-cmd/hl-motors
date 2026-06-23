@@ -91,3 +91,11 @@ export async function deleteVeiculo(id: string) {
   revalidatePath("/admin/estoque");
   revalidatePath("/");
 }
+
+// Inativar (some do site, reversível) ou reativar um veículo.
+export async function setVeiculoStatus(id: string, status: string) {
+  const supabase = await createReadClient();
+  await supabase.from("veiculos").update({ status }).eq("id", id);
+  revalidatePath("/admin/estoque");
+  revalidatePath("/");
+}

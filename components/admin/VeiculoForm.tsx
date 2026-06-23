@@ -19,7 +19,7 @@ type Cliente = { id: string; nome: string };
 
 const CAMBIO = ["Manual", "Automático", "Automatizado", "CVT"];
 const COMB = ["Flex", "Gasolina", "Diesel", "Híbrido", "Elétrico"];
-const STATUS = ["disponivel", "reservado", "vendido", "consignado"];
+const STATUS = ["disponivel", "reservado", "vendido", "consignado", "inativo"];
 
 export function VeiculoForm({
   id,

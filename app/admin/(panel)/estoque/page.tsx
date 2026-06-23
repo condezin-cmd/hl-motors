@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { createReadClient } from "@/lib/supabase/server";
 import { brl, km as fmtKm } from "@/lib/format";
-import { deleteVeiculo } from "./actions";
+import { deleteVeiculo, setVeiculoStatus } from "./actions";
 
 const statusLabel: Record<string, string> = {
   disponivel: "Disponível",
   reservado: "Reservado",
   vendido: "Vendido",
   consignado: "Consignado",
+  inativo: "Inativo",
 };
 
 export default async function EstoquePage() {
@@ -46,7 +47,7 @@ export default async function EstoquePage() {
             </thead>
             <tbody>
               {veiculos.map((c) => (
-                <tr key={c.id} className="border-t border-white/10 hover:bg-white/[0.03]">
+                <tr key={c.id} className={`border-t border-white/10 hover:bg-white/[0.03] ${c.status === "inativo" ? "opacity-50" : ""}`}>
                   <td className="px-4 py-3">
                     <div className="h-12 w-16 overflow-hidden border border-white/10 bg-black/40">
                       {c.fotos?.[0] && (
@@ -66,7 +67,20 @@ export default async function EstoquePage() {
                   <td className="px-4 py-3 text-[var(--color-mute)]">{statusLabel[c.status] ?? c.status}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
+                      <a
+                        href={`/veiculos/${c.slug ?? ""}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="border border-white/15 px-3 py-1.5 text-xs font-black uppercase text-white hover:border-[var(--color-red)]"
+                      >
+                        Visualizar
+                      </a>
                       <Link href={`/admin/estoque/${c.id}`} className="border border-white/15 px-3 py-1.5 text-xs font-black uppercase text-white hover:border-[var(--color-red)]">Editar</Link>
+                      <form action={setVeiculoStatus.bind(null, c.id, c.status === "inativo" ? "disponivel" : "inativo")}>
+                        <button className="border border-white/15 px-3 py-1.5 text-xs font-black uppercase text-[var(--color-mute)] hover:border-amber-400 hover:text-amber-300">
+                          {c.status === "inativo" ? "Reativar" : "Inativar"}
+                        </button>
+                      </form>
                       <form action={deleteVeiculo.bind(null, c.id)}>
                         <button className="border border-white/15 px-3 py-1.5 text-xs font-black uppercase text-[var(--color-mute)] hover:border-[var(--color-red)] hover:text-[var(--color-red)]">Excluir</button>
                       </form>
