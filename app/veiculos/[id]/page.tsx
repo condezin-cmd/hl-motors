@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cars, getCar } from "@/lib/cars";
+import { getCarPublic } from "@/lib/veiculos";
 import { brl, km } from "@/lib/format";
 import { site, whatsappLink } from "@/lib/site";
 import { Navbar } from "@/components/Navbar";
@@ -11,9 +11,10 @@ import { CarImage } from "@/components/CarImage";
 import { Gallery } from "@/components/Gallery";
 import { StatusBadge } from "@/components/StatusBadge";
 
-export function generateStaticParams() {
-  return cars.map((c) => ({ id: c.id }));
-}
+// Página renderizada sob demanda lendo o estoque ao vivo do Supabase.
+export const dynamic = "force-dynamic";
+
+const absFoto = (f: string) => (f.startsWith("http") ? f : `${site.url}${f}`);
 
 export async function generateMetadata({
   params,
@@ -21,7 +22,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const car = getCar(id);
+  const car = await getCarPublic(id);
   if (!car) return {};
   const title = `${car.marca} ${car.modelo} ${car.versao} ${car.ano}`;
   const desc = `${car.marca} ${car.modelo} ${car.ano} · ${km(car.km)} · ${brl(
@@ -35,7 +36,7 @@ export async function generateMetadata({
       title: `${title} — ${brl(car.preco)}`,
       description: desc,
       type: "website",
-      images: car.fotos?.length ? [{ url: car.fotos[0] }] : undefined,
+      images: car.fotos?.length ? [{ url: absFoto(car.fotos[0]) }] : undefined,
     },
   };
 }
@@ -46,7 +47,7 @@ export default async function VeiculoPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const car = getCar(id);
+  const car = await getCarPublic(id);
   if (!car) notFound();
 
   const msg = `Olá, ${site.name}! Tenho interesse no ${car.marca} ${car.modelo} ${car.versao} (${car.ano}) por ${brl(car.preco)}. Ainda está disponível?`;
@@ -78,7 +79,7 @@ export default async function VeiculoPage({
     color: car.cor,
     numberOfDoors: car.portas,
     itemCondition: "https://schema.org/UsedCondition",
-    image: (car.fotos ?? []).map((f) => `${site.url}${f}`),
+    image: (car.fotos ?? []).map(absFoto),
     offers: {
       "@type": "Offer",
       price: car.preco,

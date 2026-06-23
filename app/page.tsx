@@ -6,13 +6,18 @@ import { CarCatalog } from "@/components/CarCatalog";
 import { CarCard } from "@/components/CarCard";
 import { FeaturedCar } from "@/components/FeaturedCar";
 import { ConsignForm } from "@/components/ConsignForm";
-import { cars, brands } from "@/lib/cars";
+import { getCarsPublic, brandsOf } from "@/lib/veiculos";
 import { site, whatsappLink } from "@/lib/site";
 
-export default function Home() {
+// Estoque ao vivo do Supabase (painel controla o site em tempo real).
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const cars = await getCarsPublic();
+  const brands = brandsOf(cars);
   const featured = cars.find((c) => c.destaque) ?? cars[0];
   const destaques = cars
-    .filter((c) => c.destaque && c.id !== featured.id)
+    .filter((c) => c.destaque && c.id !== featured?.id)
     .slice(0, 8);
 
   return (
