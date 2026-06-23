@@ -69,10 +69,13 @@ export async function createVeiculo(_prev: unknown, formData: FormData) {
     kebab(`${row.marca}-${row.modelo}-${row.ano_modelo ?? ""}`) +
     "-" +
     Math.random().toString(36).slice(2, 7);
-  const { error } = await supabase.from("veiculos").insert({ ...row, slug });
+  const { data, error } = await supabase.from("veiculos").insert({ ...row, slug }).select("id").single();
   if (error) return { error: error.message };
   revalidatePath("/admin/estoque");
   revalidatePath("/");
+  const next = String(formData.get("next") ?? "").trim();
+  const campo = String(formData.get("campo") ?? "").trim();
+  if (next && next.startsWith("/admin/")) redirect(`${next}?novo=${data.id}&campo=${campo}`);
   redirect("/admin/estoque");
 }
 

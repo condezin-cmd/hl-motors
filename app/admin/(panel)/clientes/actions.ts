@@ -27,9 +27,12 @@ function parse(formData: FormData) {
 
 export async function createCliente(_prev: unknown, formData: FormData) {
   const supabase = await createReadClient();
-  const { error } = await supabase.from("clientes").insert(parse(formData));
+  const { data, error } = await supabase.from("clientes").insert(parse(formData)).select("id").single();
   if (error) return { error: error.message };
   revalidatePath("/admin/clientes");
+  const next = String(formData.get("next") ?? "").trim();
+  const campo = String(formData.get("campo") ?? "").trim();
+  if (next && next.startsWith("/admin/")) redirect(`${next}?novo=${data.id}&campo=${campo}`);
   redirect("/admin/clientes");
 }
 

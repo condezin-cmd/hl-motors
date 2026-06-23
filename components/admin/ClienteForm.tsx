@@ -19,10 +19,14 @@ export function ClienteForm({
   id,
   values,
   submitLabel = "Salvar cliente",
+  next,
+  campo,
 }: {
   id?: string;
   values?: Values;
   submitLabel?: string;
+  next?: string;
+  campo?: string;
 }) {
   const action = id ? updateCliente.bind(null, id) : createCliente;
   const [state, formAction, pending] = useActionState(action, null);
@@ -31,6 +35,8 @@ export function ClienteForm({
 
   return (
     <form ref={formRef} action={formAction} className="space-y-8">
+      {next && <input type="hidden" name="next" value={next} />}
+      {campo && <input type="hidden" name="campo" value={campo} />}
       <DocImport
         tipo="cliente"
         titulo="Importar da CNH digital"

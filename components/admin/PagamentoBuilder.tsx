@@ -36,12 +36,14 @@ export function PagamentoBuilder({
   name,
   avaliacoes,
   alvo,
+  initial,
 }: {
   name: string;
   avaliacoes: AvalOpt[];
   alvo?: number;
+  initial?: Pag[];
 }) {
-  const [lines, setLines] = useState<Pag[]>([]);
+  const [lines, setLines] = useState<Pag[]>(initial ?? []);
 
   const set = (i: number, patch: Partial<Pag>) =>
     setLines((ls) => ls.map((l, j) => (j === i ? { ...l, ...patch } : l)));

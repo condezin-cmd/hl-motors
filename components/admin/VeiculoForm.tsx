@@ -25,10 +25,14 @@ export function VeiculoForm({
   id,
   values,
   clientes,
+  next,
+  campo,
 }: {
   id?: string;
   values?: Values;
   clientes: Cliente[];
+  next?: string;
+  campo?: string;
 }) {
   const action = id ? updateVeiculo.bind(null, id) : createVeiculo;
   const [state, formAction, pending] = useActionState(action, null);
@@ -59,6 +63,8 @@ export function VeiculoForm({
 
   return (
     <form ref={formRef} action={formAction} className="space-y-8">
+      {next && <input type="hidden" name="next" value={next} />}
+      {campo && <input type="hidden" name="campo" value={campo} />}
       <input type="hidden" name="fotos" value={JSON.stringify(fotos)} />
 
       <DocImport
