@@ -5,19 +5,28 @@ import { CarImage } from "./CarImage";
 import { StatusBadge } from "./StatusBadge";
 
 export function CarCard({ car, compact = false }: { car: Car; compact?: boolean }) {
+  const vendido = car.status === "vendido";
   return (
     <Link
       href={`/veiculos/${car.id}`}
       className="group block overflow-hidden border border-white/15 bg-[var(--color-panel)] transition-transform duration-300 hover:-translate-y-1 hover:border-[var(--color-red)]"
     >
       <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10">
-        <div className="h-full w-full transition-transform duration-500 group-hover:scale-[1.04]">
+        <div className={`h-full w-full transition-transform duration-500 group-hover:scale-[1.04] ${vendido ? "grayscale" : ""}`}>
           <CarImage car={car} rounded="rounded-none" />
         </div>
-        <div className="absolute left-3 top-3">
-          <StatusBadge status={car.status} />
-        </div>
-        {car.destaque && (
+        {vendido ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+            <span className="-rotate-[7deg] border-[3px] border-white px-6 py-1.5 font-display text-3xl font-black uppercase tracking-wider text-white shadow-xl">
+              Vendido
+            </span>
+          </div>
+        ) : (
+          <div className="absolute left-3 top-3">
+            <StatusBadge status={car.status} />
+          </div>
+        )}
+        {car.destaque && !vendido && (
           <div className="absolute right-3 top-3 bg-[var(--color-red)] px-3 py-1 text-[10px] font-black uppercase text-white">
             Destaque
           </div>
@@ -46,8 +55,8 @@ export function CarCard({ car, compact = false }: { car: Car; compact?: boolean 
               {brl(car.preco)}
             </p>
           </div>
-          <span className="border border-white/20 px-4 py-2 text-xs font-black uppercase text-white transition-colors group-hover:border-[var(--color-red)] group-hover:bg-[var(--color-red)]">
-            Comprar
+          <span className={`border px-4 py-2 text-xs font-black uppercase transition-colors ${vendido ? "border-white/15 text-[var(--color-mute)]" : "border-white/20 text-white group-hover:border-[var(--color-red)] group-hover:bg-[var(--color-red)]"}`}>
+            {vendido ? "Vendido" : "Comprar"}
           </span>
         </div>
       </div>

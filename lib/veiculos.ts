@@ -82,6 +82,23 @@ export async function getCarPublic(slug: string): Promise<Car | null> {
   return staticCars.find((c) => c.id === slug) ?? null;
 }
 
+// Vitrine de vendidos (prova social). Marcar 'vendido' move o carro pra cá;
+// marcar 'inativo' some de tudo.
+export async function getSoldCars(limit = 8): Promise<Car[]> {
+  try {
+    const { data, error } = await supabase
+      .from("veiculos")
+      .select("*")
+      .eq("status", "vendido")
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+    if (error || !data) return [];
+    return data.map(rowToCar);
+  } catch {
+    return [];
+  }
+}
+
 export function brandsOf(cars: Car[]): string[] {
   return Array.from(new Set(cars.map((c) => c.marca))).sort();
 }

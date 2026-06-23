@@ -50,6 +50,7 @@ export default async function VeiculoPage({
   const car = await getCarPublic(id);
   if (!car) notFound();
 
+  const vendido = car.status === "vendido";
   const msg = `Olá, ${site.name}! Tenho interesse no ${car.marca} ${car.modelo} ${car.versao} (${car.ano}) por ${brl(car.preco)}. Ainda está disponível?`;
 
   const specs: [string, string][] = [
@@ -150,22 +151,46 @@ export default async function VeiculoPage({
                 </p>
               </div>
 
-              <a
-                href={whatsappLink(msg)}
-                target="_blank"
-                rel="noreferrer"
-                className="sheen mt-7 flex items-center justify-center bg-[var(--color-red)] px-6 py-4 text-sm font-black uppercase text-white transition-colors hover:bg-[var(--color-red-bright)]"
-              >
-                Tenho interesse
-              </a>
-              <a
-                href={whatsappLink(`Olá, ${site.name}! Quero agendar um test-drive do ${car.modelo}.`)}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 flex items-center justify-center border border-white/20 px-6 py-3.5 text-sm font-black uppercase text-white transition-colors hover:border-[var(--color-red)] hover:bg-[var(--color-red)]"
-              >
-                Agendar test-drive
-              </a>
+              {vendido ? (
+                <>
+                  <p className="mt-7 border border-white/15 bg-black/30 px-4 py-3 text-center text-sm font-bold uppercase text-[var(--color-mute)]">
+                    Este veículo já foi vendido
+                  </p>
+                  <Link
+                    href="/#estoque"
+                    className="sheen mt-3 flex items-center justify-center bg-[var(--color-red)] px-6 py-4 text-sm font-black uppercase text-white transition-colors hover:bg-[var(--color-red-bright)]"
+                  >
+                    Ver carros disponíveis
+                  </Link>
+                  <a
+                    href={whatsappLink(`Olá, ${site.name}! Vi que o ${car.modelo} foi vendido. Têm algo parecido?`)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 flex items-center justify-center border border-white/20 px-6 py-3.5 text-sm font-black uppercase text-white transition-colors hover:border-[var(--color-red)] hover:bg-[var(--color-red)]"
+                  >
+                    Quero um parecido
+                  </a>
+                </>
+              ) : (
+                <>
+                  <a
+                    href={whatsappLink(msg)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="sheen mt-7 flex items-center justify-center bg-[var(--color-red)] px-6 py-4 text-sm font-black uppercase text-white transition-colors hover:bg-[var(--color-red-bright)]"
+                  >
+                    Tenho interesse
+                  </a>
+                  <a
+                    href={whatsappLink(`Olá, ${site.name}! Quero agendar um test-drive do ${car.modelo}.`)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 flex items-center justify-center border border-white/20 px-6 py-3.5 text-sm font-black uppercase text-white transition-colors hover:border-[var(--color-red)] hover:bg-[var(--color-red)]"
+                  >
+                    Agendar test-drive
+                  </a>
+                </>
+              )}
 
               <p className="mt-5 text-center text-xs text-[var(--color-mute)]">
                 {site.hours}

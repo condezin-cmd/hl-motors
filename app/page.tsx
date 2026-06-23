@@ -6,14 +6,14 @@ import { CarCatalog } from "@/components/CarCatalog";
 import { CarCard } from "@/components/CarCard";
 import { FeaturedCar } from "@/components/FeaturedCar";
 import { ConsignForm } from "@/components/ConsignForm";
-import { getCarsPublic, brandsOf } from "@/lib/veiculos";
+import { getCarsPublic, getSoldCars, brandsOf } from "@/lib/veiculos";
 import { site, whatsappLink } from "@/lib/site";
 
 // Estoque ao vivo do Supabase (painel controla o site em tempo real).
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const cars = await getCarsPublic();
+  const [cars, soldCars] = await Promise.all([getCarsPublic(), getSoldCars()]);
   const brands = brandsOf(cars);
   const featured = cars.find((c) => c.destaque) ?? cars[0];
   const destaques = cars
@@ -117,6 +117,23 @@ export default async function Home() {
             </div>
           </div>
         </section>
+
+        {soldCars.length > 0 && (
+          <section id="vendidos" className="border-t border-white/10 px-4 py-20">
+            <div className="mx-auto max-w-6xl">
+              <SectionHeader
+                eyebrow="Prova social"
+                title="Já saíram da HL"
+                subtitle="Veículos que já encontraram dono. O próximo pode ser o seu."
+              />
+              <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {soldCars.map((car) => (
+                  <CarCard key={car.id} car={car} compact />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         <section id="consignacao" className="border-y border-white/10 bg-black/25 px-4 py-20">
           <div className="mx-auto grid max-w-6xl items-start gap-10 lg:grid-cols-[1fr_1.05fr]">

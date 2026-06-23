@@ -1,13 +1,20 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
 import Link from "next/link";
 import { PhotoUploader } from "@/components/admin/PhotoUploader";
 import { FileUploader } from "@/components/admin/FileUploader";
+import { DocImport } from "@/components/admin/DocImport";
+import { fillForm } from "@/lib/admin/fill-form";
 import { createAvaliacao, updateAvaliacao } from "@/app/admin/(panel)/avaliacoes/actions";
 
 type Cliente = { id: string; nome: string };
 const COMB = ["Flex", "Gasolina", "Diesel", "Híbrido", "Elétrico"];
+const VEIC_LABELS: Record<string, string> = {
+  marca: "Marca", modelo: "Modelo", versao: "Versão", ano_fab: "Ano fab.",
+  ano_modelo: "Ano modelo", cor: "Cor", combustivel: "Combustível",
+  placa: "Placa", renavam: "Renavam", chassi: "Chassi",
+};
 const STATUS = [
   { v: "avaliado", l: "Avaliado" },
   { v: "aceito", l: "Aceito" },
@@ -27,9 +34,17 @@ export function AvaliacaoForm({
   const action = id ? updateAvaliacao.bind(null, id) : createAvaliacao;
   const [state, formAction, pending] = useActionState(action, null);
   const v = values ?? {};
+  const formRef = useRef<HTMLFormElement>(null);
 
   return (
-    <form action={formAction} className="space-y-8">
+    <form ref={formRef} action={formAction} className="space-y-8">
+      <DocImport
+        tipo="veiculo"
+        titulo="Importar do documento (CRLV) do veículo avaliado"
+        hint="Envie o PDF ou a foto do CRLV — preenche marca, modelo, ano, placa, renavam, chassi…"
+        onExtract={(dados) => fillForm(formRef.current, dados, VEIC_LABELS)}
+      />
+
       <Group title="Proprietário">
         <div className="sm:col-span-2">
           <Label>Cliente (dono do veículo)</Label>
