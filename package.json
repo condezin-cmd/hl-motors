@@ -9,7 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
+    "@react-pdf/renderer": "^4.5.1",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.2",
+    "docx": "^9.7.1",
     "next": "^15.5.19",
+    "pdf-parse": "^2.4.5",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },

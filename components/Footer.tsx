@@ -50,7 +50,15 @@ export function Footer() {
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-[var(--color-mute)] sm:flex-row">
           <p>© {new Date().getFullYear()} {site.name}. Todos os direitos reservados.</p>
-          <p>Identidade visual baseada na placa oficial da marca.</p>
+          <div className="flex items-center gap-4">
+            <p>Identidade visual baseada na placa oficial da marca.</p>
+            <a
+              href="/admin"
+              className="font-bold uppercase tracking-wider text-white/30 transition-colors hover:text-[var(--color-red)]"
+            >
+              Área do Lojista
+            </a>
+          </div>
         </div>
       </div>
     </footer>
