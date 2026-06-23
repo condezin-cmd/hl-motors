@@ -51,13 +51,14 @@ function rowToCar(r: Row): Car {
   };
 }
 
-// Estoque visível no site (não mostra vendido/consignado interno).
+// Estoque visível no site: tudo que está à venda (inclui consignados).
+// Só ficam de fora 'vendido' (vai pra vitrine) e 'inativo' (escondido).
 export async function getCarsPublic(): Promise<Car[]> {
   try {
     const { data, error } = await supabase
       .from("veiculos")
       .select("*")
-      .in("status", ["disponivel", "reservado"])
+      .not("status", "in", "(vendido,inativo)")
       .order("destaque", { ascending: false })
       .order("created_at", { ascending: false });
     if (error || !data || data.length === 0) return staticCars;
