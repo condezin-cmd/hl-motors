@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createReadClient } from "@/lib/supabase/server";
 import { brl } from "@/lib/format";
+import { COMISSAO_CONSIGNACAO } from "@/lib/docs/templates";
 import { DocDownloads } from "@/components/admin/DocDownloads";
 import { setNegociacaoStatus, deleteNegociacao, gerarDocNegociacao } from "../actions";
 
@@ -76,6 +77,20 @@ export default async function NegociacaoDetailPage({ params }: { params: Promise
             : "Sem troca"}
         </Card>
       </div>
+
+      {prop.data && (
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="border border-white/12 bg-black/20 p-4">
+            <h3 className="text-[11px] font-black uppercase tracking-wider text-[var(--color-mute)]">Comissão da empresa (consignado)</h3>
+            <p className="mt-1 font-display text-2xl font-black text-[var(--color-red)]">{brl(COMISSAO_CONSIGNACAO)}</p>
+          </div>
+          <div className="border border-white/12 bg-black/20 p-4">
+            <h3 className="text-[11px] font-black uppercase tracking-wider text-[var(--color-mute)]">Repasse ao proprietário</h3>
+            <p className="mt-1 font-display text-2xl font-black text-white">{brl(Math.max((Number(neg.valor) || 0) - COMISSAO_CONSIGNACAO, 0))}</p>
+            <p className="mt-0.5 text-xs text-[var(--color-mute)]">{prop.data.nome}</p>
+          </div>
+        </div>
+      )}
 
       {pagamentos.length > 0 && (
         <div className="mt-4 border border-white/12 bg-black/20 p-4">

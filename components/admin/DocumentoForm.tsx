@@ -64,7 +64,7 @@ export function DocumentoForm({
       {showValor && (
         <div className="grid gap-4 sm:grid-cols-2">
           <F name="valor" label="Valor da venda (R$)" placeholder="vazio = usa o preço do veículo" />
-          {showConsig && <F name="comissao" label="Comissão (%)" placeholder="Ex: 5" />}
+          {showConsig && <F name="comissao" label="Comissão da empresa (R$)" def="3000" placeholder="fixo R$ 3.000" />}
           {showConsig && <F name="telefone" label="Telefone do proprietário" />}
         </div>
       )}
@@ -140,13 +140,14 @@ function Sel({ name, label, options, required }: { name: string; label: string; 
   );
 }
 
-function F({ name, label, placeholder }: { name: string; label: string; placeholder?: string }) {
+function F({ name, label, placeholder, def }: { name: string; label: string; placeholder?: string; def?: string }) {
   return (
     <div>
       <Label>{label}</Label>
       <input
         name={name}
         placeholder={placeholder}
+        defaultValue={def}
         className="w-full border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-[var(--color-red)]"
       />
     </div>

@@ -14,6 +14,10 @@ export type Block =
 
 export type Doc = { titulo: string; blocks: Block[] };
 
+// Regra de negócio: comissão fixa da empresa por veículo consignado.
+export const COMISSAO_CONSIGNACAO = 3000;
+const onlyNum = (x: any) => Number(String(x ?? "").replace(/[^\d]/g, "")) || 0;
+
 export type Loja = {
   nome: string;
   cnpj: string;
@@ -210,10 +214,15 @@ export function procuracao(loja: Loja, outorgante: Cliente, outorgado: Cliente, 
 // 3) DECLARAÇÃO DE CONSIGNAÇÃO
 // ---------------------------------------------------------------------------
 export function consignacao(loja: Loja, prop: Cliente, v: Veiculo, ex: Extra): Doc {
+  const valorVeic = onlyNum(ex.valor) || onlyNum(v.preco);
+  const comissao = onlyNum(ex.comissao) || COMISSAO_CONSIGNACAO;
+  const liquido = Math.max(valorVeic - comissao, 0);
   const blocks: Block[] = [
     { t: "h1", text: loja.nome },
     { t: "h2", text: "DECLARAÇÃO DE CONSIGNAÇÃO" },
-    { t: "kv", label: "Valor do veículo", value: brl(ex.valor || v.preco) },
+    { t: "kv", label: "Valor do veículo", value: brl(valorVeic) },
+    { t: "kv", label: "Comissão da empresa (fixa)", value: brl(comissao) },
+    { t: "kv", label: "Valor líquido ao proprietário", value: brl(liquido) },
     { t: "kv", label: "Telefone", value: nz(ex.telefone || prop.telefone) },
     { t: "p", text: `${loja.cidade}/${loja.uf}, ${dataExtenso()}.` },
     { t: "p", text: "Declaro para todos e quaisquer fins que deixei em consignação, para venda, o veículo de minha propriedade e/ou responsabilidade, abaixo descriminado:" },
@@ -228,6 +237,7 @@ export function consignacao(loja: Loja, prop: Cliente, v: Veiculo, ex: Extra): D
     { t: "kv", label: "KM", value: nz(v.km) },
     { t: "p", text: "Declaro ainda que me responsabilizo civil e criminalmente pela procedência do mesmo (mecânica, elétrica, dentre outras), bem como pelas multas, bloqueio de venda, judicial, número de chassi e outras pendências que possam haver sobre o referido veículo até a presente data, conforme os artigos pertinentes do Código Civil e do Código de Defesa do Consumidor. A garantia do veículo é de minha responsabilidade; qualquer vício/defeito que possa surgir ficará sob a responsabilidade do proprietário." },
     { t: "p", text: `Declaro também que a loja – ${loja.nome} – poderá realizar a venda da melhor maneira que entender, para que surta o objetivo de valores. Por outro lado, a empresa assegura o veículo, responsabilizando-se sobre a sua estadia, garantindo todo e qualquer negócio, tratando de toda a documentação e efetuando o pagamento no prazo pré-estipulado.` },
+    { t: "p", text: `Fica ajustada a comissão fixa de ${brl(comissao)} (${brl(comissao).replace("R$", "").trim()} reais) devida à empresa pela intermediação da venda, sendo repassado ao proprietário o valor líquido de ${brl(liquido)} após a concretização da venda e a devida quitação.` },
     { t: "p", text: "O prazo mínimo desta é de 30 (trinta) dias. Na retirada antecipada será cobrada uma taxa referente à emissão de notas fiscais, de R$ 100,00." },
     ...(ex.observacoes ? [{ t: "p", text: "Observações: " + ex.observacoes } as Block] : []),
     { t: "sp" },
