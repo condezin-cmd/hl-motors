@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 
 const base = [
   { href: "/admin", label: "Dashboard", icon: "▦" },
+  { href: "/admin/negociacoes", label: "Negociações", icon: "₪" },
   { href: "/admin/clientes", label: "Clientes", icon: "◍" },
   { href: "/admin/estoque", label: "Estoque", icon: "▤" },
   { href: "/admin/avaliacoes", label: "Avaliações", icon: "◈" },
