@@ -99,6 +99,7 @@ export default async function NegociacaoDetailPage({ params }: { params: Promise
         <Gerar id={id} tipo="contrato" label="Gerar contrato de compra e venda" />
         {neg.proprietario_id && <Gerar id={id} tipo="procuracao" label="Gerar procuração do veículo vendido" />}
         {neg.tem_troca && neg.avaliacao_id && <Gerar id={id} tipo="procuracao_troca" label="Gerar procuração da troca" />}
+        <Gerar id={id} tipo="declaracao_residencia" label="Gerar declaração de residência" />
       </div>
 
       {docs.length > 0 && (

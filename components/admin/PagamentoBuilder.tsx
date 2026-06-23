@@ -35,9 +35,11 @@ const TIPOS = [
 export function PagamentoBuilder({
   name,
   avaliacoes,
+  alvo,
 }: {
   name: string;
   avaliacoes: AvalOpt[];
+  alvo?: number;
 }) {
   const [lines, setLines] = useState<Pag[]>([]);
 
@@ -137,16 +139,31 @@ export function PagamentoBuilder({
         })}
       </div>
 
-      <div className="mt-3 flex items-center justify-between">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         <button type="button" onClick={add} className="border border-dashed border-white/25 px-4 py-2.5 text-xs font-black uppercase text-[var(--color-mute)] hover:border-[var(--color-red)]">
           + Adicionar forma de pagamento
         </button>
-        {lines.length > 0 && (
-          <p className="text-sm text-[var(--color-mute)]">
-            Total informado: <span className="font-black text-white">{brl(total)}</span>
-          </p>
-        )}
+        {(lines.length > 0 || (alvo ?? 0) > 0) && <Resumo alvo={alvo} informado={total} />}
       </div>
+    </div>
+  );
+}
+
+function Resumo({ alvo, informado }: { alvo?: number; informado: number }) {
+  if (!alvo || alvo <= 0) {
+    return <p className="text-sm text-[var(--color-mute)]">Total informado: <span className="font-black text-white">{brl(informado)}</span></p>;
+  }
+  const falta = alvo - informado;
+  return (
+    <div className="text-right text-sm">
+      <p className="text-[var(--color-mute)]">Venda <span className="font-bold text-white">{brl(alvo)}</span> · Informado <span className="font-bold text-white">{brl(informado)}</span></p>
+      {falta > 0 ? (
+        <p className="font-black text-[var(--color-red-bright)]">Falta {brl(falta)} para fechar</p>
+      ) : falta < 0 ? (
+        <p className="font-black text-amber-300">Excede em {brl(-falta)}</p>
+      ) : (
+        <p className="font-black text-emerald-400">✓ Quitado</p>
+      )}
     </div>
   );
 }

@@ -82,6 +82,38 @@ export async function deleteNegociacao(id: string) {
   redirect("/admin/negociacoes");
 }
 
+function kebab(s: string) {
+  return s.toString().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+// Criação rápida de cliente direto da negociação.
+export async function quickCliente(payload: { nome: string; cpf?: string; telefone?: string }) {
+  const sb = await createReadClient();
+  if (!payload.nome?.trim()) return { error: "Informe o nome." };
+  const { data, error } = await sb.from("clientes")
+    .insert({ nome: payload.nome.trim(), cpf: payload.cpf || null, telefone: payload.telefone || null })
+    .select("id, nome").single();
+  if (error) return { error: error.message };
+  revalidatePath("/admin/clientes");
+  return { id: data.id as string, label: data.nome as string };
+}
+
+// Criação rápida de veículo direto da negociação.
+export async function quickVeiculo(payload: { marca: string; modelo: string; ano_modelo?: string; preco?: string }) {
+  const sb = await createReadClient();
+  if (!payload.marca?.trim() || !payload.modelo?.trim()) return { error: "Informe marca e modelo." };
+  const ano = payload.ano_modelo ? Number(String(payload.ano_modelo).replace(/[^\d]/g, "")) || null : null;
+  const preco = payload.preco ? Number(String(payload.preco).replace(/[^\d]/g, "")) || 0 : 0;
+  const slug = kebab(`${payload.marca}-${payload.modelo}-${ano ?? ""}`) + "-" + Math.random().toString(36).slice(2, 7);
+  const { data, error } = await sb.from("veiculos")
+    .insert({ marca: payload.marca.trim(), modelo: payload.modelo.trim(), ano_modelo: ano, preco, status: "disponivel", origem: "compra", slug })
+    .select("id, marca, modelo, ano_modelo").single();
+  if (error) return { error: error.message };
+  revalidatePath("/admin/estoque");
+  return { id: data.id as string, label: `${data.marca} ${data.modelo} ${data.ano_modelo ?? ""}`.trim() };
+}
+
 const avalToVeiculo = (a: any): T.Veiculo => ({
   marca: a?.marca, modelo: a?.modelo, versao: a?.versao,
   ano_fab: a?.ano_fab, ano_modelo: a?.ano_modelo, cor: a?.cor,
@@ -119,6 +151,9 @@ export async function gerarDocNegociacao(negId: string, tipo: string): Promise<v
     if (!aval.data) return;
     const outorgante = (trocaProp.data ?? comp.data) as T.Cliente;
     doc = T.procuracao(loja, outorgante, comprador, avalToVeiculo(aval.data));
+    veiculoIdDoc = null;
+  } else if (tipo === "declaracao_residencia") {
+    doc = T.residencia(loja, comprador);
     veiculoIdDoc = null;
   } else {
     return;
