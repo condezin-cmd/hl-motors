@@ -26,7 +26,7 @@ export async function gerarDocumento(_prev: unknown, formData: FormData) {
   const veiculoId = g("veiculo_id");
 
   if (!clienteId) return { error: "Selecione o cliente." };
-  if ((tipo === "contrato" || tipo === "termo_consignacao") && !veiculoId)
+  if ((tipo === "contrato" || tipo === "termo_consignacao" || tipo === "procuracao") && !veiculoId)
     return { error: "Selecione o veículo." };
   if (tipo === "procuracao" && !cliente2Id)
     return { error: "Selecione o outorgado (quem recebe os poderes)." };

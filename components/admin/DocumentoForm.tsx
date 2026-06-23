@@ -26,7 +26,7 @@ export function DocumentoForm({
   const [state, action, pending] = useActionState(gerarDocumento, null);
   const [tipo, setTipo] = useState("contrato");
 
-  const needVeiculo = tipo === "contrato" || tipo === "termo_consignacao";
+  const needVeiculo = tipo === "contrato" || tipo === "termo_consignacao" || tipo === "procuracao";
   const needCliente2 = tipo === "procuracao";
   const showValor = tipo === "contrato" || tipo === "termo_consignacao";
   const showConsig = tipo === "termo_consignacao";
