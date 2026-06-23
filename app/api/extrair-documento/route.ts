@@ -16,18 +16,18 @@ const ESSENCIAIS: Record<string, string[]> = {
 // Descrição + campos para o motor de IA (Gemini), usados só no fallback de fotos.
 const SPEC: Record<string, { doc: string; campos: Record<string, string> }> = {
   veiculo: {
-    doc: "CRLV / documento do veículo",
+    doc: "CRLV-e (Certificado de Registro e Licenciamento de Veículo) brasileiro, ou foto/PDF do documento do veículo",
     campos: {
-      marca: "Marca/montadora (ex.: Volkswagen). Só a marca.",
-      modelo: "Modelo (ex.: Nivus). Sem a marca.",
-      versao: "Versão/acabamento (ex.: Highline)",
-      ano_fab: "Ano de fabricação (4 dígitos)",
-      ano_modelo: "Ano do modelo (4 dígitos)",
-      cor: "Cor predominante",
-      combustivel: "Um de: Flex, Gasolina, Diesel, Híbrido, Elétrico. Álcool/Gasolina = Flex.",
-      placa: "Placa (só letras e números)",
-      renavam: "RENAVAM",
-      chassi: "Chassi (VIN)",
+      marca: "Montadora. No CRLV o campo MARCA/MODELO vem junto (ex.: 'VW/NIVUS HIGHLINE'); aqui retorne só a marca por extenso (VW=Volkswagen, GM=Chevrolet, MMC=Mitsubishi, etc.).",
+      modelo: "Só o modelo, sem a marca nem a versão (ex.: de 'VW/NIVUS HIGHLINE' → 'Nivus').",
+      versao: "Versão/acabamento que sobra depois do modelo (ex.: 'Highline 1.0 TSI'). Pode ser vazio.",
+      ano_fab: "ANO FABRICAÇÃO (4 dígitos). No CRLV costuma vir 'ANO FAB./ANO MOD.' como '2021/2022'.",
+      ano_modelo: "ANO MODELO (4 dígitos).",
+      cor: "COR PREDOMINANTE.",
+      combustivel: "Exatamente um de: Flex, Gasolina, Diesel, Híbrido, Elétrico. 'ÁLCOOL/GASOLINA', 'GASOLINA/ÁLCOOL' ou 'BICOMBUSTÍVEL' = Flex.",
+      placa: "PLACA (só letras e números, sem hífen).",
+      renavam: "CÓDIGO RENAVAM (11 dígitos).",
+      chassi: "CHASSI (17 caracteres).",
     },
   },
   cliente: {
@@ -72,30 +72,30 @@ export async function POST(req: NextRequest) {
   let dados: Record<string, string> = {};
   let modelo = "";
 
-  // 1) GRÁTIS: PDF com texto embutido (CNH-e / CRLV-e) → leitura local, sem IA.
-  if (isPdf) {
+  // 1) IA grátis (Gemini) PRIMEIRO — máxima confiabilidade em CRLV/CNH real,
+  //    qualquer layout (CRLV-e do gov.br, foto, scan). Lê PDF e imagem nativo.
+  if (process.env.GEMINI_API_KEY) {
     try {
-      const texto = await pdfText(buffer);
-      if (texto && texto.replace(/\s/g, "").length > 40) {
-        dados = parseLocal(tipo, texto);
-        modelo = "local (grátis)";
-      }
-    } catch {
-      /* PDF escaneado/sem texto → cai no fallback */
+      const b64 = buffer.toString("base64");
+      dados = await extrairGemini(spec.campos, spec.doc, isPdf ? "application/pdf" : mime, b64);
+      modelo = "IA (grátis)";
+    } catch (e) {
+      console.error("[gemini]", (e as Error).message);
     }
   }
 
-  // 2) Fallback GRÁTIS: foto/escaneado ou leitura local incompleta → Gemini (se configurado).
-  const precisaIA = isImg || faltaEssencial(tipo, dados);
-  if (precisaIA && process.env.GEMINI_API_KEY) {
+  // 2) Reforço local (PDF com texto) — quando não há IA configurada ou ela
+  //    falhou/deixou campo essencial em branco. IA tem prioridade.
+  if (isPdf && faltaEssencial(tipo, dados)) {
     try {
-      const b64 = buffer.toString("base64");
-      const ia = await extrairGemini(spec.campos, spec.doc, isPdf ? "application/pdf" : mime, b64);
-      dados = { ...dados, ...ia }; // IA preenche o que faltou
-      modelo = isPdf && modelo ? "local + IA (grátis)" : "IA (grátis)";
-    } catch (e) {
-      console.error("[gemini]", (e as Error).message);
-      /* mantém o que já temos do local */
+      const texto = await pdfText(buffer);
+      if (texto && texto.replace(/\s/g, "").length > 40) {
+        const loc = parseLocal(tipo, texto);
+        dados = { ...loc, ...dados }; // IA prevalece sobre o local
+        modelo = modelo ? "IA + local" : "local (grátis)";
+      }
+    } catch {
+      /* sem texto extraível */
     }
   }
 
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
     const dica =
       isImg && !process.env.GEMINI_API_KEY
         ? "Para ler fotos é preciso configurar a leitura por IA (Gemini, grátis)."
-        : "Não reconheci os dados neste documento. Tente o PDF original da CNH/CRLV digital.";
+        : "Não reconheci os dados neste documento. Tente o PDF/foto original do CRLV ou CNH.";
     return NextResponse.json({ error: dica }, { status: 422 });
   }
 
