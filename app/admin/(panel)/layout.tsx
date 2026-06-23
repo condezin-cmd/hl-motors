@@ -4,6 +4,10 @@ import { AdminNav } from "@/components/admin/AdminNav";
 
 export const metadata = { title: "Painel" };
 
+// Todo o painel exige login + dados ao vivo: nunca pre-renderizar no build
+// (evita precisar de chaves Supabase em build-time).
+export const dynamic = "force-dynamic";
+
 export default function PanelLayout({
   children,
 }: {
