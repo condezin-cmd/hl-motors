@@ -9,13 +9,19 @@ export function Navbar() {
       <div className="border-b border-white/10 bg-black/25 px-4">
         <div className="mx-auto flex h-9 max-w-6xl items-center justify-between gap-4 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-mute)]">
           <span>{site.city}/{site.state} - Seminovos selecionados</span>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <a href={site.instagram} target="_blank" rel="noreferrer" className="hidden hover:text-white sm:inline">
               {site.instagramHandle}
             </a>
             <a href={whatsappLink(`Olá, ${site.name}! Vim pelo site.`)} target="_blank" rel="noreferrer" className="text-white">
               {site.whatsappDisplay}
             </a>
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1 border border-white/15 px-2.5 py-0.5 text-white/70 transition-colors hover:border-[var(--color-red)] hover:text-white"
+            >
+              <span aria-hidden>🔒</span> Área do Lojista
+            </Link>
           </div>
         </div>
       </div>
