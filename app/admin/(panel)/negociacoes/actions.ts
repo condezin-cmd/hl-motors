@@ -46,6 +46,16 @@ function parse(formData: FormData) {
   };
 }
 
+// Dá baixa no estoque quando a venda fecha (e devolve se reabrir/cancelar).
+async function sincronizarEstoque(sb: any, veiculoId: string | null, status: string) {
+  if (!veiculoId) return;
+  if (status === "fechada") {
+    await sb.from("veiculos").update({ status: "vendido" }).eq("id", veiculoId);
+  } else if (status === "aberta" || status === "cancelada") {
+    await sb.from("veiculos").update({ status: "disponivel" }).eq("id", veiculoId).eq("status", "vendido");
+  }
+}
+
 export async function createNegociacao(_prev: unknown, formData: FormData) {
   const sb = await createReadClient();
   const row = parse(formData);
@@ -53,7 +63,10 @@ export async function createNegociacao(_prev: unknown, formData: FormData) {
   if (!row.veiculo_id) return { error: "Selecione o veículo." };
   const { data, error } = await sb.from("negociacoes").insert(row).select("id").single();
   if (error) return { error: error.message };
+  await sincronizarEstoque(sb, row.veiculo_id, row.status);
   revalidatePath("/admin/negociacoes");
+  revalidatePath("/admin/estoque");
+  revalidatePath("/");
   redirect(`/admin/negociacoes/${data.id}`);
 }
 
@@ -64,15 +77,22 @@ export async function updateNegociacao(id: string, _prev: unknown, formData: For
   if (!row.veiculo_id) return { error: "Selecione o veículo." };
   const { error } = await sb.from("negociacoes").update(row).eq("id", id);
   if (error) return { error: error.message };
+  await sincronizarEstoque(sb, row.veiculo_id, row.status);
   revalidatePath("/admin/negociacoes");
+  revalidatePath("/admin/estoque");
+  revalidatePath("/");
   redirect(`/admin/negociacoes/${id}`);
 }
 
 export async function setNegociacaoStatus(id: string, status: string) {
   const sb = await createReadClient();
+  const { data: neg } = await sb.from("negociacoes").select("veiculo_id").eq("id", id).single();
   await sb.from("negociacoes").update({ status }).eq("id", id);
+  await sincronizarEstoque(sb, neg?.veiculo_id ?? null, status);
   revalidatePath("/admin/negociacoes");
   revalidatePath(`/admin/negociacoes/${id}`);
+  revalidatePath("/admin/estoque");
+  revalidatePath("/");
 }
 
 export async function deleteNegociacao(id: string) {

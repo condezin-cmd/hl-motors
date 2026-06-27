@@ -11,3 +11,7 @@ npm-debug.log*
 next-env.d.ts
 .vercel
 *.tsbuildinfo
+
+# lixo de scraping (nao versionar)
+.chrome-socarrao-profile/
+.socarrao_nuxt/
