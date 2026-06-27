@@ -35,9 +35,14 @@ export default async function FinanceiroPage() {
           <h1 className="font-display text-4xl font-black uppercase text-white">Financeiro</h1>
           <p className="mt-1 text-[var(--color-mute)]">Livro caixa da loja — entradas, saídas e saldo.</p>
         </div>
-        <Link href="/admin/financeiro/novo" className="bg-[var(--color-red)] px-5 py-3 text-sm font-black uppercase text-white hover:bg-[var(--color-red-bright)]">
-          + Novo lançamento
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/financeiro/fixos" className="border border-white/15 px-5 py-3 text-sm font-black uppercase text-white hover:border-[var(--color-red)]">
+            Gastos fixos
+          </Link>
+          <Link href="/admin/financeiro/novo" className="bg-[var(--color-red)] px-5 py-3 text-sm font-black uppercase text-white hover:bg-[var(--color-red-bright)]">
+            + Novo lançamento
+          </Link>
+        </div>
       </div>
 
       {error && <p className="mt-6 border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-200">⚠️ {error.message}</p>}
