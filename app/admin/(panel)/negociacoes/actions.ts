@@ -56,6 +56,34 @@ async function sincronizarEstoque(sb: any, veiculoId: string | null, status: str
   }
 }
 
+// Fechar venda -> lança a entrada no caixa automaticamente (idempotente).
+// Venda própria entra cheia; consignada entra só a comissão fixa da loja.
+async function sincronizarFinanceiro(
+  sb: any,
+  neg: { id: string; veiculo_id: string | null; proprietario_id: string | null; valor: number | null },
+  status: string,
+) {
+  if (status === "fechada") {
+    const { data: existe } = await sb.from("lancamentos").select("id").eq("negociacao_id", neg.id).eq("auto", true).maybeSingle();
+    if (existe) return;
+    const consignado = !!neg.proprietario_id;
+    const row = consignado
+      ? { tipo: "entrada", categoria: "comissao_consignacao", valor: T.COMISSAO_CONSIGNACAO, descricao: "Comissão de venda consignada" }
+      : { tipo: "entrada", categoria: "venda", valor: Number(neg.valor) || 0, descricao: "Venda de veículo" };
+    await sb.from("lancamentos").insert({
+      ...row,
+      veiculo_id: neg.veiculo_id,
+      negociacao_id: neg.id,
+      auto: true,
+      data: new Date().toISOString().slice(0, 10),
+    });
+    revalidatePath("/admin/financeiro");
+  } else if (status === "aberta" || status === "cancelada") {
+    await sb.from("lancamentos").delete().eq("negociacao_id", neg.id).eq("auto", true);
+    revalidatePath("/admin/financeiro");
+  }
+}
+
 export async function createNegociacao(_prev: unknown, formData: FormData) {
   const sb = await createReadClient();
   const row = parse(formData);
@@ -64,6 +92,7 @@ export async function createNegociacao(_prev: unknown, formData: FormData) {
   const { data, error } = await sb.from("negociacoes").insert(row).select("id").single();
   if (error) return { error: error.message };
   await sincronizarEstoque(sb, row.veiculo_id, row.status);
+  await sincronizarFinanceiro(sb, { id: data.id, veiculo_id: row.veiculo_id, proprietario_id: row.proprietario_id, valor: row.valor }, row.status);
   revalidatePath("/admin/negociacoes");
   revalidatePath("/admin/estoque");
   revalidatePath("/");
@@ -78,6 +107,7 @@ export async function updateNegociacao(id: string, _prev: unknown, formData: For
   const { error } = await sb.from("negociacoes").update(row).eq("id", id);
   if (error) return { error: error.message };
   await sincronizarEstoque(sb, row.veiculo_id, row.status);
+  await sincronizarFinanceiro(sb, { id, veiculo_id: row.veiculo_id, proprietario_id: row.proprietario_id, valor: row.valor }, row.status);
   revalidatePath("/admin/negociacoes");
   revalidatePath("/admin/estoque");
   revalidatePath("/");
@@ -86,9 +116,10 @@ export async function updateNegociacao(id: string, _prev: unknown, formData: For
 
 export async function setNegociacaoStatus(id: string, status: string) {
   const sb = await createReadClient();
-  const { data: neg } = await sb.from("negociacoes").select("veiculo_id").eq("id", id).single();
+  const { data: neg } = await sb.from("negociacoes").select("id, veiculo_id, proprietario_id, valor").eq("id", id).single();
   await sb.from("negociacoes").update({ status }).eq("id", id);
   await sincronizarEstoque(sb, neg?.veiculo_id ?? null, status);
+  if (neg) await sincronizarFinanceiro(sb, neg as any, status);
   revalidatePath("/admin/negociacoes");
   revalidatePath(`/admin/negociacoes/${id}`);
   revalidatePath("/admin/estoque");
