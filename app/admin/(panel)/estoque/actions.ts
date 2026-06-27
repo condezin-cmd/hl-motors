@@ -96,6 +96,29 @@ export async function deleteVeiculo(id: string) {
   revalidatePath("/");
 }
 
+// Adiciona um custo/agregado a um veículo (vira saída no caixa, vinculada ao carro).
+export async function addCustoVeiculo(veiculoId: string, formData: FormData) {
+  const supabase = await createReadClient();
+  const g = (k: string) => String(formData.get(k) ?? "").trim();
+  const valor = Number(g("valor").replace(/[^\d,.-]/g, "").replace(/\.(?=\d{3})/g, "").replace(",", ".")) || 0;
+  const categoria = g("categoria") === "custo_veiculo" ? "custo_veiculo" : "reparo";
+  if (valor > 0) {
+    await supabase.from("lancamentos").insert({
+      tipo: "saida", categoria, valor, descricao: g("descricao") || null,
+      veiculo_id: veiculoId, data: g("data") || new Date().toISOString().slice(0, 10),
+    });
+  }
+  revalidatePath(`/admin/estoque/${veiculoId}`);
+  revalidatePath("/admin/financeiro");
+}
+
+export async function removeCustoVeiculo(id: string, veiculoId: string) {
+  const supabase = await createReadClient();
+  await supabase.from("lancamentos").delete().eq("id", id);
+  revalidatePath(`/admin/estoque/${veiculoId}`);
+  revalidatePath("/admin/financeiro");
+}
+
 // Inativar (some do site, reversível) ou reativar um veículo.
 export async function setVeiculoStatus(id: string, status: string) {
   const supabase = await createReadClient();

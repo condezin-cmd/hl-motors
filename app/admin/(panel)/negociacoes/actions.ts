@@ -84,6 +84,30 @@ async function sincronizarFinanceiro(
   }
 }
 
+// Carro recebido na troca entra no estoque (com custo = valor avaliado). Idempotente.
+async function receberTroca(sb: any, negId: string, avaliacaoId: string | null, status: string) {
+  if (status !== "fechada" || !avaliacaoId) return;
+  const { data: a } = await sb.from("avaliacoes").select("*").eq("id", avaliacaoId).single();
+  if (!a || a.veiculo_estoque_id) return; // já recebido
+  const slug = kebab(`${a.marca}-${a.modelo}-${a.ano_modelo ?? ""}`) + "-" + Math.random().toString(36).slice(2, 7);
+  const { data: novo, error } = await sb.from("veiculos").insert({
+    marca: a.marca, modelo: a.modelo, versao: a.versao, ano_fab: a.ano_fab, ano_modelo: a.ano_modelo,
+    km: a.km ?? 0, preco: a.valor_avaliado ?? 0, cor: a.cor, combustivel: a.combustivel,
+    placa: a.placa, renavam: a.renavam, chassi: a.chassi, status: "disponivel", origem: "troca",
+    fotos: Array.isArray(a.fotos) ? a.fotos : [], slug,
+  }).select("id").single();
+  if (error || !novo) return;
+  await sb.from("avaliacoes").update({ veiculo_estoque_id: novo.id, status: "usado" }).eq("id", avaliacaoId);
+  await sb.from("lancamentos").insert({
+    tipo: "saida", categoria: "custo_veiculo", valor: a.valor_avaliado ?? 0,
+    descricao: "Entrada por troca", veiculo_id: novo.id, negociacao_id: negId, auto: true,
+    data: new Date().toISOString().slice(0, 10),
+  });
+  revalidatePath("/admin/estoque");
+  revalidatePath("/admin/financeiro");
+  revalidatePath("/");
+}
+
 export async function createNegociacao(_prev: unknown, formData: FormData) {
   const sb = await createReadClient();
   const row = parse(formData);
@@ -93,6 +117,7 @@ export async function createNegociacao(_prev: unknown, formData: FormData) {
   if (error) return { error: error.message };
   await sincronizarEstoque(sb, row.veiculo_id, row.status);
   await sincronizarFinanceiro(sb, { id: data.id, veiculo_id: row.veiculo_id, proprietario_id: row.proprietario_id, valor: row.valor }, row.status);
+  await receberTroca(sb, data.id, row.avaliacao_id, row.status);
   revalidatePath("/admin/negociacoes");
   revalidatePath("/admin/estoque");
   revalidatePath("/");
@@ -108,6 +133,7 @@ export async function updateNegociacao(id: string, _prev: unknown, formData: For
   if (error) return { error: error.message };
   await sincronizarEstoque(sb, row.veiculo_id, row.status);
   await sincronizarFinanceiro(sb, { id, veiculo_id: row.veiculo_id, proprietario_id: row.proprietario_id, valor: row.valor }, row.status);
+  await receberTroca(sb, id, row.avaliacao_id, row.status);
   revalidatePath("/admin/negociacoes");
   revalidatePath("/admin/estoque");
   revalidatePath("/");
@@ -116,10 +142,11 @@ export async function updateNegociacao(id: string, _prev: unknown, formData: For
 
 export async function setNegociacaoStatus(id: string, status: string) {
   const sb = await createReadClient();
-  const { data: neg } = await sb.from("negociacoes").select("id, veiculo_id, proprietario_id, valor").eq("id", id).single();
+  const { data: neg } = await sb.from("negociacoes").select("id, veiculo_id, proprietario_id, valor, avaliacao_id").eq("id", id).single();
   await sb.from("negociacoes").update({ status }).eq("id", id);
   await sincronizarEstoque(sb, neg?.veiculo_id ?? null, status);
   if (neg) await sincronizarFinanceiro(sb, neg as any, status);
+  if (neg) await receberTroca(sb, id, (neg as any).avaliacao_id ?? null, status);
   revalidatePath("/admin/negociacoes");
   revalidatePath(`/admin/negociacoes/${id}`);
   revalidatePath("/admin/estoque");
