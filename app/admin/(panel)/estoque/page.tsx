@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { createReadClient } from "@/lib/supabase/server";
-import { brl, km as fmtKm } from "@/lib/format";
-import { deleteVeiculo, setVeiculoStatus } from "./actions";
+import { EstoqueSocarraoTable } from "@/components/admin/EstoqueSocarraoTable";
 
-const statusLabel: Record<string, string> = {
-  disponivel: "Disponível",
-  reservado: "Reservado",
-  vendido: "Vendido",
-  consignado: "Consignado",
-  inativo: "Inativo",
-};
+export default async function EstoquePage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = (await searchParams) ?? {};
+  const socarraoStatus = typeof params.socarrao === "string" ? params.socarrao : null;
+  const socarraoMessage = typeof params.message === "string" ? params.message : null;
+  const created = typeof params.created === "string" ? params.created : "0";
+  const updated = typeof params.updated === "string" ? params.updated : "0";
+  const mode = typeof params.mode === "string" ? params.mode : null;
 
-export default async function EstoquePage() {
   const supabase = await createReadClient();
   const { data: veiculos, error } = await supabase
     .from("veiculos")
@@ -27,70 +29,27 @@ export default async function EstoquePage() {
         </Link>
       </div>
 
+      {socarraoStatus === "ok" && (
+        <p className="mt-6 border border-emerald-400/40 bg-emerald-400/10 p-4 text-sm text-emerald-200">
+          {mode === "queue"
+            ? `SóCarrão: ${updated} veículo(s) preparado(s) para envio.`
+            : mode === "selected"
+              ? `SóCarrão: ${updated} selecionado(s) atualizado(s), ${created} sem vínculo encontrado.`
+              : `SóCarrão sincronizado: ${created} novo(s), ${updated} atualizado(s).`}
+        </p>
+      )}
+      {socarraoStatus === "erro" && (
+        <p className="mt-6 border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-200">
+          Falha ao sincronizar SóCarrão: {socarraoMessage ?? "verifique as variáveis de ambiente e a migration v4."}
+        </p>
+      )}
+
       {error ? (
         <p className="mt-8 border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-200">⚠️ {error.message}</p>
       ) : !veiculos?.length ? (
         <p className="mt-8 text-[var(--color-mute)]">Nenhum veículo no estoque. Clique em “Adicionar veículo”.</p>
       ) : (
-        <div className="mt-6 overflow-x-auto border border-white/10">
-          <table className="w-full text-sm">
-            <thead className="bg-[var(--color-panel)] text-left text-[11px] uppercase tracking-wider text-[var(--color-mute)]">
-              <tr>
-                <th className="px-4 py-3">Foto</th>
-                <th className="px-4 py-3">Veículo</th>
-                <th className="px-4 py-3">Ano</th>
-                <th className="px-4 py-3">KM</th>
-                <th className="px-4 py-3">Preço</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {veiculos.map((c) => (
-                <tr key={c.id} className={`border-t border-white/10 hover:bg-white/[0.03] ${c.status === "inativo" ? "opacity-50" : ""}`}>
-                  <td className="px-4 py-3">
-                    <div className="h-12 w-16 overflow-hidden border border-white/10 bg-black/40">
-                      {c.fotos?.[0] && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={c.fotos[0]} alt="" className="h-full w-full object-cover" />
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="font-bold uppercase text-white">{c.marca} {c.modelo}</p>
-                    <p className="text-xs text-[var(--color-mute)]">{c.versao}</p>
-                    {c.destaque && <span className="text-[10px] font-black uppercase text-[var(--color-red)]">★ destaque</span>}
-                  </td>
-                  <td className="px-4 py-3 text-[var(--color-mute)]">{c.ano_modelo ?? "—"}</td>
-                  <td className="px-4 py-3 text-[var(--color-mute)]">{c.km != null ? fmtKm(c.km) : "—"}</td>
-                  <td className="px-4 py-3 font-black text-[var(--color-red)]">{brl(c.preco ?? 0)}</td>
-                  <td className="px-4 py-3 text-[var(--color-mute)]">{statusLabel[c.status] ?? c.status}</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <a
-                        href={`/veiculos/${c.slug ?? ""}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="border border-white/15 px-3 py-1.5 text-xs font-black uppercase text-white hover:border-[var(--color-red)]"
-                      >
-                        Visualizar
-                      </a>
-                      <Link href={`/admin/estoque/${c.id}`} className="border border-white/15 px-3 py-1.5 text-xs font-black uppercase text-white hover:border-[var(--color-red)]">Editar</Link>
-                      <form action={setVeiculoStatus.bind(null, c.id, c.status === "inativo" ? "disponivel" : "inativo")}>
-                        <button className="border border-white/15 px-3 py-1.5 text-xs font-black uppercase text-[var(--color-mute)] hover:border-amber-400 hover:text-amber-300">
-                          {c.status === "inativo" ? "Reativar" : "Inativar"}
-                        </button>
-                      </form>
-                      <form action={deleteVeiculo.bind(null, c.id)}>
-                        <button className="border border-white/15 px-3 py-1.5 text-xs font-black uppercase text-[var(--color-mute)] hover:border-[var(--color-red)] hover:text-[var(--color-red)]">Excluir</button>
-                      </form>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <EstoqueSocarraoTable veiculos={veiculos} />
       )}
     </div>
   );
