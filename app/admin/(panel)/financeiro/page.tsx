@@ -28,6 +28,19 @@ export default async function FinanceiroPage() {
     vMap = new Map((data ?? []).map((v) => [v.id, `${v.marca} ${v.modelo}`]));
   }
 
+  // agrupa por mês (competência da data)
+  const grupos = new Map<string, typeof L>();
+  for (const l of L) {
+    const ym = String(l.data || "").slice(0, 7);
+    if (!grupos.has(ym)) grupos.set(ym, []);
+    grupos.get(ym)!.push(l);
+  }
+  const meses = [...grupos.keys()].sort().reverse();
+  const mesLabel = (ym: string) => {
+    const [y, m] = ym.split("-");
+    return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  };
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -54,47 +67,50 @@ export default async function FinanceiroPage() {
         <Card label="Resultado do mês" value={entradasMes - saidasMes} tone={entradasMes - saidasMes >= 0 ? "pos" : "neg"} />
       </div>
 
-      <h2 className="font-display mt-10 text-2xl font-black uppercase text-white">Lançamentos</h2>
+      <h2 className="font-display mt-10 text-2xl font-black uppercase text-white">Lançamentos por mês</h2>
       {L.length === 0 ? (
         <p className="mt-4 text-[var(--color-mute)]">Nenhum lançamento ainda. Clique em “Novo lançamento”.</p>
       ) : (
-        <div className="mt-4 overflow-x-auto border border-white/10">
-          <table className="w-full text-sm">
-            <thead className="bg-[var(--color-panel)] text-left text-[11px] uppercase tracking-wider text-[var(--color-mute)]">
-              <tr>
-                <th className="px-4 py-3">Data</th>
-                <th className="px-4 py-3">Categoria</th>
-                <th className="px-4 py-3">Detalhe</th>
-                <th className="px-4 py-3 text-right">Valor</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {L.map((l) => {
-                const entrada = l.tipo === "entrada";
-                return (
-                  <tr key={l.id} className="border-t border-white/10 hover:bg-white/[0.03]">
-                    <td className="px-4 py-3 text-[var(--color-mute)]">{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</td>
-                    <td className="px-4 py-3">
-                      <span className="font-bold text-white">{catLabel(l.categoria)}</span>
-                      {l.auto && <span className="ml-2 text-[10px] font-black uppercase text-emerald-300">auto</span>}
-                    </td>
-                    <td className="px-4 py-3 text-[var(--color-mute)]">
-                      {[l.veiculo_id ? vMap.get(l.veiculo_id) : null, l.socio, l.descricao, l.forma_pagamento].filter(Boolean).join(" · ") || "—"}
-                    </td>
-                    <td className={`px-4 py-3 text-right font-black ${entrada ? "text-emerald-400" : "text-[var(--color-red-bright)]"}`}>
-                      {entrada ? "+" : "−"} {brl(num(l.valor))}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <form action={deleteLancamento.bind(null, l.id)}>
-                        <button className="border border-white/15 px-3 py-1.5 text-xs font-black uppercase text-[var(--color-mute)] hover:border-[var(--color-red)] hover:text-[var(--color-red)]">Excluir</button>
-                      </form>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="mt-4 space-y-8">
+          {meses.map((ym) => {
+            const itens = grupos.get(ym)!;
+            const ent = itens.filter((l) => l.tipo === "entrada").reduce((s, l) => s + num(l.valor), 0);
+            const sai = itens.filter((l) => l.tipo === "saida").reduce((s, l) => s + num(l.valor), 0);
+            return (
+              <div key={ym}>
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[var(--color-red)] pb-2">
+                  <h3 className="font-display text-xl font-black uppercase text-white">{mesLabel(ym)}</h3>
+                  <div className="flex gap-4 text-xs font-black uppercase">
+                    <span className="text-emerald-400">+ {brl(ent)}</span>
+                    <span className="text-[var(--color-red-bright)]">− {brl(sai)}</span>
+                    <span className={ent - sai >= 0 ? "text-white" : "text-[var(--color-red-bright)]"}>= {brl(ent - sai)}</span>
+                  </div>
+                </div>
+                <div className="mt-2 overflow-x-auto border border-white/10">
+                  <table className="w-full text-sm">
+                    <tbody>
+                      {itens.map((l) => {
+                        const entrada = l.tipo === "entrada";
+                        return (
+                          <tr key={l.id} className="border-t border-white/10 first:border-t-0 hover:bg-white/[0.03]">
+                            <td className="whitespace-nowrap px-4 py-3 text-[var(--color-mute)]">{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</td>
+                            <td className="px-4 py-3"><span className="font-bold text-white">{catLabel(l.categoria)}</span>{l.auto && <span className="ml-2 text-[10px] font-black uppercase text-emerald-300">auto</span>}</td>
+                            <td className="px-4 py-3 text-[var(--color-mute)]">{[l.veiculo_id ? vMap.get(l.veiculo_id) : null, l.socio, l.descricao, l.forma_pagamento].filter(Boolean).join(" · ") || "—"}</td>
+                            <td className={`whitespace-nowrap px-4 py-3 text-right font-black ${entrada ? "text-emerald-400" : "text-[var(--color-red-bright)]"}`}>{entrada ? "+" : "−"} {brl(num(l.valor))}</td>
+                            <td className="px-4 py-3 text-right">
+                              <form action={deleteLancamento.bind(null, l.id)}>
+                                <button className="border border-white/15 px-3 py-1.5 text-xs font-black uppercase text-[var(--color-mute)] hover:border-[var(--color-red)] hover:text-[var(--color-red)]">Excluir</button>
+                              </form>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

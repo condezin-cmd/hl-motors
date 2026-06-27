@@ -13,7 +13,7 @@ export default async function GastosFixosPage({
   const { data: fixos } = await sb.from("gastos_fixos").select("*").order("ativo", { ascending: false }).order("nome");
   const lista = fixos ?? [];
   const totalMensal = lista.filter((f) => f.ativo).reduce((s, f) => s + (Number(f.valor) || 0), 0);
-  const mesAtual = new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const compAtual = new Date().toISOString().slice(0, 7);
 
   return (
     <div className="max-w-3xl">
@@ -29,9 +29,13 @@ export default async function GastosFixosPage({
           <p className="text-[11px] font-black uppercase tracking-wide text-[var(--color-mute)]">Total mensal (ativos)</p>
           <p className="font-display text-3xl font-black text-white">{brl(totalMensal)}</p>
         </div>
-        <form action={lancarFixosDoMes}>
+        <form action={lancarFixosDoMes} className="flex items-end gap-2">
+          <div>
+            <label className="mb-1 block text-[10px] font-black uppercase tracking-wider text-[var(--color-mute)]">Mês (competência)</label>
+            <input type="month" name="competencia" defaultValue={compAtual} className="border border-white/15 bg-[var(--color-graphite)] px-3 py-2.5 text-sm text-white outline-none focus:border-[var(--color-red)]" />
+          </div>
           <button className="bg-[var(--color-red)] px-5 py-3 text-sm font-black uppercase text-white hover:bg-[var(--color-red-bright)]">
-            Lançar fixos de {mesAtual}
+            Lançar fixos
           </button>
         </form>
       </div>

@@ -30,13 +30,14 @@ export async function deleteGastoFixo(id: string) {
   revalidatePath("/admin/financeiro/fixos");
 }
 
-// Lança no caixa todos os gastos fixos ativos da competência (mês). Idempotente.
-export async function lancarFixosDoMes() {
+// Lança no caixa todos os gastos fixos ativos de uma competência (mês). Idempotente.
+export async function lancarFixosDoMes(formData: FormData) {
   const sb = await createReadClient();
   const now = new Date();
-  const ano = now.getFullYear();
-  const mes = now.getMonth() + 1;
-  const competencia = `${ano}-${String(mes).padStart(2, "0")}`;
+  let competencia = String(formData.get("competencia") ?? "").trim();
+  if (!/^\d{4}-\d{2}$/.test(competencia)) {
+    competencia = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  }
 
   const { data: fixos } = await sb.from("gastos_fixos").select("*").eq("ativo", true);
   const { data: jaLancados } = await sb.from("lancamentos").select("gasto_fixo_id").eq("competencia", competencia).not("gasto_fixo_id", "is", null);
@@ -45,7 +46,7 @@ export async function lancarFixosDoMes() {
   const novos = (fixos ?? [])
     .filter((f) => !feitos.has(f.id))
     .map((f) => {
-      const dia = f.dia_vencimento ? Math.min(f.dia_vencimento, 28) : now.getDate();
+      const dia = f.dia_vencimento ? Math.min(f.dia_vencimento, 28) : 1;
       return {
         tipo: "saida",
         categoria: "gasto_fixo",
