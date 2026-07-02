@@ -230,7 +230,7 @@ export async function gerarDocNegociacao(negId: string, tipo: string): Promise<v
   let veiculoIdDoc: string | null = neg.veiculo_id;
 
   if (tipo === "contrato") {
-    const extra: T.Extra = { valor: neg.valor ? String(neg.valor) : "", pagamentos: neg.pagamentos ?? [] };
+    const extra: T.Extra = { valor: neg.valor ? String(neg.valor) : "", pagamentos: neg.pagamentos ?? [], observacoes: neg.observacoes || undefined };
     doc = T.contrato(loja, comprador, veiculo, extra);
   } else if (tipo === "procuracao") {
     if (!prop.data) return; // botão só aparece quem tem proprietário de terceiro

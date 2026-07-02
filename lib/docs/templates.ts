@@ -155,7 +155,9 @@ export function contrato(loja: Loja, comprador: Cliente, v: Veiculo, ex: Extra):
       : ex.formaPagamento
         ? ([{ t: "p", text: `Forma de pagamento: ${ex.formaPagamento}.` }] as Block[])
         : []),
-    ...(ex.observacoes ? [{ t: "p", text: ex.observacoes } as Block] : []),
+    ...(ex.observacoes
+      ? ([{ t: "p", text: "Observações: " + ex.observacoes, bold: true } as Block])
+      : []),
     { t: "h2", text: "CLÁUSULA TERCEIRA - DA VISTORIA E AVALIAÇÃO DO VEÍCULO" },
     { t: "p", text: "O COMPRADOR declara ter vistoriado e avaliado o estado em que se encontra o veículo ora negociado, estando o mesmo em perfeitas condições de funcionamento e estado de conservação." },
     { t: "h2", text: "CLÁUSULA QUARTA - DA RESPONSABILIDADE CIVIL E CRIMINAL" },
