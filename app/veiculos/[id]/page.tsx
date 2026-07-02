@@ -10,6 +10,7 @@ import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { CarImage } from "@/components/CarImage";
 import { Gallery } from "@/components/Gallery";
 import { StatusBadge } from "@/components/StatusBadge";
+import { LeadCaptureForm } from "@/components/LeadCaptureForm";
 
 // Página renderizada sob demanda lendo o estoque ao vivo do Supabase.
 export const dynamic = "force-dynamic";
@@ -189,6 +190,7 @@ export default async function VeiculoPage({
                   >
                     Agendar test-drive
                   </a>
+                  <LeadCaptureForm veiculoId={car.id} veiculoTexto={`${car.marca} ${car.modelo} ${car.versao} ${car.ano}`} mensagem={msg} />
                 </>
               )}
 

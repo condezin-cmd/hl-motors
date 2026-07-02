@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { site, whatsappLink } from "@/lib/site";
+import { registrarLeadPublico } from "@/lib/leads-actions";
 
 const empty = {
   nome: "",
@@ -20,7 +21,7 @@ export function ConsignForm() {
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setF((p) => ({ ...p, [k]: e.target.value }));
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const msg =
       `*Quero consignar/vender meu carro na ${site.name}*\n\n` +
@@ -31,6 +32,17 @@ export function ConsignForm() {
       `KM: ${f.km}\n` +
       `Valor desejado: ${f.preco}\n` +
       (f.obs ? `Observações: ${f.obs}\n` : "");
+    try {
+      await registrarLeadPublico({
+        nome: f.nome,
+        telefone: f.telefone,
+        veiculo_texto: `${f.veiculo} ${f.ano}`.trim(),
+        mensagem: `Consignação/venda · valor desejado ${f.preco || "—"}${f.km ? ` · ${f.km} km` : ""}${f.obs ? ` · ${f.obs}` : ""}`,
+        origem: "site",
+      });
+    } catch {
+      /* segue pro WhatsApp mesmo assim */
+    }
     window.open(whatsappLink(msg), "_blank");
   }
 

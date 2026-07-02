@@ -11,12 +11,13 @@ const statusCls: Record<string, string> = {
 async function load() {
   try {
     const sb = await createReadClient();
-    const [negsR, veicsR, clientesR, avalR, leadsR] = await Promise.all([
+    const [negsR, veicsR, clientesR, avalR, leadsR, leadsNovosR] = await Promise.all([
       sb.from("negociacoes").select("id, status, valor, created_at, comprador_id").order("created_at", { ascending: false }),
       sb.from("veiculos").select("id, slug, marca, modelo, status, preco, created_at"),
       sb.from("clientes").select("*", { count: "exact", head: true }),
       sb.from("avaliacoes").select("*", { count: "exact", head: true }),
       sb.from("leads_consignacao").select("*", { count: "exact", head: true }).eq("status", "novo"),
+      sb.from("leads").select("*", { count: "exact", head: true }).eq("status", "novo"),
     ]);
     return {
       ok: clientesR.error === null,
@@ -25,9 +26,10 @@ async function load() {
       clientes: clientesR.count ?? 0,
       avaliacoes: avalR.count ?? 0,
       leads: leadsR.count ?? 0,
+      leadsNovos: leadsNovosR.count ?? 0,
     };
   } catch {
-    return { ok: false, negs: [], veics: [], clientes: 0, avaliacoes: 0, leads: 0 };
+    return { ok: false, negs: [], veics: [], clientes: 0, avaliacoes: 0, leads: 0, leadsNovos: 0 };
   }
 }
 
@@ -83,6 +85,13 @@ export default async function Dashboard() {
         <div className="mt-6 border border-amber-400/40 bg-amber-400/10 p-4 text-sm text-amber-200">
           ⚠️ Não consegui ler os dados. Verifique a conexão com o banco.
         </div>
+      )}
+
+      {d.leadsNovos > 0 && (
+        <Link href="/admin/leads" className="mt-6 flex items-center justify-between gap-3 border border-amber-400/50 bg-amber-400/10 p-4 hover:bg-amber-400/[0.15]">
+          <span className="text-sm font-black uppercase text-amber-300">◉ {d.leadsNovos} lead(s) novo(s) esperando atendimento</span>
+          <span className="text-xs font-black uppercase text-amber-300">Atender agora →</span>
+        </Link>
       )}
 
       {/* linha principal — dinheiro */}
@@ -150,6 +159,7 @@ export default async function Dashboard() {
 
       <h2 className="font-display mt-12 text-2xl font-black uppercase text-white">Ações rápidas</h2>
       <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Action href="/admin/leads" title="Atender leads" desc="Funil de atendimento — interessados do site e dos portais." />
         <Action href="/admin/negociacoes/novo" title="Nova negociação" desc="Abrir uma venda: comprador, carro, troca e documentos." />
         <Action href="/admin/estoque/novo" title="Adicionar veículo" desc="Inserir um carro no estoque do site." />
         <Action href="/admin/clientes/novo" title="Novo cliente" desc="Cadastrar comprador, vendedor ou consignante." />
