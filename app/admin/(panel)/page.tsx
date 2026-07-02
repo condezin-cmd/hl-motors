@@ -13,7 +13,7 @@ async function load() {
     const sb = await createReadClient();
     const [negsR, veicsR, clientesR, avalR, leadsR] = await Promise.all([
       sb.from("negociacoes").select("id, status, valor, created_at, comprador_id").order("created_at", { ascending: false }),
-      sb.from("veiculos").select("status, preco"),
+      sb.from("veiculos").select("id, slug, marca, modelo, status, preco, created_at"),
       sb.from("clientes").select("*", { count: "exact", head: true }),
       sb.from("avaliacoes").select("*", { count: "exact", head: true }),
       sb.from("leads_consignacao").select("*", { count: "exact", head: true }).eq("status", "novo"),
@@ -48,6 +48,14 @@ export default async function Dashboard() {
   const disponiveis = d.veics.filter((v) => ESTOQUE_VISIVEL.includes(v.status));
   const valorEstoque = disponiveis.reduce((s, v) => s + num(v.preco), 0);
   const vendidos = d.veics.filter((v) => v.status === "vendido").length;
+
+  // carros parados: à venda há 60+ dias
+  const dias = (iso: string) => Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  const parados = disponiveis
+    .filter((v) => v.created_at && dias(v.created_at) >= 60)
+    .map((v) => ({ ...v, d: dias(v.created_at) }))
+    .sort((a, b) => b.d - a.d);
+  const capitalParado = parados.reduce((s, v) => s + num(v.preco), 0);
 
   // nomes dos compradores das negociações recentes
   const recentes = d.negs.slice(0, 6);
@@ -92,6 +100,27 @@ export default async function Dashboard() {
         <Stat label="Vendidos (total)" value={vendidos} />
         <Stat label="Leads consignação" value={d.leads} highlight={d.leads > 0} />
       </div>
+
+      {/* carros parados — alerta de gestão */}
+      {parados.length > 0 && (
+        <div className="mt-8 border border-amber-400/40 bg-amber-400/[0.07] p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-display text-xl font-black uppercase text-amber-300">⏳ {parados.length} carro(s) parado(s) há +60 dias</h2>
+              <p className="mt-1 text-sm text-[var(--color-mute)]">{brl(capitalParado)} de capital parado no pátio. Considere revisar preço ou anunciar em mais portais.</p>
+            </div>
+            <Link href="/admin/estoque" className="border border-amber-400/50 px-4 py-2 text-xs font-black uppercase text-amber-300 hover:bg-amber-400/10">Ver estoque →</Link>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {parados.slice(0, 8).map((v) => (
+              <Link key={v.id} href={`/admin/estoque/${v.id}`} className="border border-white/12 bg-black/20 px-3 py-1.5 text-xs text-white hover:border-amber-400">
+                <span className="font-bold uppercase">{v.marca} {v.modelo}</span>
+                <span className="ml-2 font-black text-amber-300">{v.d}d</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* negociações recentes */}
       <div className="mt-12 flex items-center justify-between">
