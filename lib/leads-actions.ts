@@ -15,6 +15,40 @@ export type LeadPublicoInput = {
 const isUuid = (s: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
 
+// No site o "id" do carro é o slug — resolve para o uuid real do estoque.
+async function resolverVeiculoId(sb: any, ref?: string | null): Promise<string | null> {
+  if (!ref) return null;
+  if (isUuid(ref)) return ref;
+  const { data } = await sb.from("veiculos").select("id").eq("slug", ref).maybeSingle();
+  return data?.id ?? null;
+}
+
+// Registra interesse a partir de um clique nos botões de WhatsApp (sem contato
+// digitado — o contato chega pela própria conversa). Entra no funil como "novo".
+export async function registrarInteresse(input: {
+  veiculo_id?: string | null;
+  veiculo_texto?: string | null;
+  mensagem?: string | null;
+}): Promise<{ ok: boolean }> {
+  try {
+    const sb = await createReadClient();
+    const veiculoId = await resolverVeiculoId(sb, input.veiculo_id);
+    await sb.from("leads").insert({
+      origem: "site",
+      canal_detalhe: "WhatsApp direto",
+      nome: null,
+      telefone: null,
+      veiculo_id: veiculoId,
+      veiculo_texto: (input.veiculo_texto ?? "").trim() || null,
+      mensagem: (input.mensagem ?? "").trim() || null,
+      status: "novo",
+    });
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
 // Grava um lead vindo do site público (RLS permite insert anônimo).
 export async function registrarLeadPublico(input: LeadPublicoInput): Promise<{ ok: boolean }> {
   const nome = (input.nome ?? "").trim();
@@ -22,13 +56,7 @@ export async function registrarLeadPublico(input: LeadPublicoInput): Promise<{ o
   if (!nome || !telefone) return { ok: false };
   try {
     const sb = await createReadClient();
-
-    // No site, o "id" do carro é o slug — resolve para o uuid real do estoque.
-    let veiculoId: string | null = input.veiculo_id || null;
-    if (veiculoId && !isUuid(veiculoId)) {
-      const { data } = await sb.from("veiculos").select("id").eq("slug", veiculoId).maybeSingle();
-      veiculoId = data?.id ?? null;
-    }
+    const veiculoId = await resolverVeiculoId(sb, input.veiculo_id);
 
     await sb.from("leads").insert({
       origem: input.origem || "site",

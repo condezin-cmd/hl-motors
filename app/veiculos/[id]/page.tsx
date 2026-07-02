@@ -11,6 +11,7 @@ import { CarImage } from "@/components/CarImage";
 import { Gallery } from "@/components/Gallery";
 import { StatusBadge } from "@/components/StatusBadge";
 import { LeadCaptureForm } from "@/components/LeadCaptureForm";
+import { WhatsIntentButton } from "@/components/WhatsIntentButton";
 
 // Página renderizada sob demanda lendo o estoque ao vivo do Supabase.
 export const dynamic = "force-dynamic";
@@ -174,22 +175,24 @@ export default async function VeiculoPage({
                 </>
               ) : (
                 <>
-                  <a
+                  <WhatsIntentButton
                     href={whatsappLink(msg)}
-                    target="_blank"
-                    rel="noreferrer"
+                    veiculoId={car.id}
+                    veiculoTexto={`${car.marca} ${car.modelo} ${car.versao} ${car.ano}`}
+                    mensagem={`Interesse (via WhatsApp) no ${car.marca} ${car.modelo} ${car.versao} ${car.ano}`}
                     className="sheen mt-7 flex items-center justify-center bg-[var(--color-red)] px-6 py-4 text-sm font-black uppercase text-white transition-colors hover:bg-[var(--color-red-bright)]"
                   >
                     Tenho interesse
-                  </a>
-                  <a
+                  </WhatsIntentButton>
+                  <WhatsIntentButton
                     href={whatsappLink(`Olá, ${site.name}! Quero agendar um test-drive do ${car.modelo}.`)}
-                    target="_blank"
-                    rel="noreferrer"
+                    veiculoId={car.id}
+                    veiculoTexto={`${car.marca} ${car.modelo} ${car.versao} ${car.ano}`}
+                    mensagem={`Quer agendar test-drive do ${car.marca} ${car.modelo} ${car.versao} ${car.ano}`}
                     className="mt-3 flex items-center justify-center border border-white/20 px-6 py-3.5 text-sm font-black uppercase text-white transition-colors hover:border-[var(--color-red)] hover:bg-[var(--color-red)]"
                   >
                     Agendar test-drive
-                  </a>
+                  </WhatsIntentButton>
                   <LeadCaptureForm veiculoId={car.id} veiculoTexto={`${car.marca} ${car.modelo} ${car.versao} ${car.ano}`} mensagem={msg} />
                 </>
               )}
