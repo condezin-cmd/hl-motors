@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createReadClient } from "@/lib/supabase/server";
 import { SocarraoClient, socarraoVehicleToVeiculo } from "@/lib/integrations/socarrao";
+import { normPlaca, veiculoComMesmaPlaca } from "@/lib/placa";
 
 function kebab(s: string) {
   return s
@@ -66,6 +67,9 @@ function parse(formData: FormData) {
 export async function createVeiculo(_prev: unknown, formData: FormData) {
   const supabase = await createReadClient();
   const row = parse(formData);
+  row.placa = normPlaca(row.placa);
+  const dup = await veiculoComMesmaPlaca(supabase, row.placa);
+  if (dup) return { error: `Já existe um veículo ativo com a placa ${row.placa} no estoque: ${dup.marca} ${dup.modelo}. Edite o existente em vez de cadastrar de novo.` };
   const slug =
     kebab(`${row.marca}-${row.modelo}-${row.ano_modelo ?? ""}`) +
     "-" +
@@ -82,7 +86,11 @@ export async function createVeiculo(_prev: unknown, formData: FormData) {
 
 export async function updateVeiculo(id: string, _prev: unknown, formData: FormData) {
   const supabase = await createReadClient();
-  const { error } = await supabase.from("veiculos").update(parse(formData)).eq("id", id);
+  const row = parse(formData);
+  row.placa = normPlaca(row.placa);
+  const dup = await veiculoComMesmaPlaca(supabase, row.placa, id);
+  if (dup) return { error: `A placa ${row.placa} já pertence a outro veículo ativo: ${dup.marca} ${dup.modelo}.` };
+  const { error } = await supabase.from("veiculos").update(row).eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/admin/estoque");
   revalidatePath("/");

@@ -8,6 +8,7 @@ import { site } from "@/lib/site";
 import * as T from "@/lib/docs/templates";
 import { renderPdf } from "@/lib/docs/render-pdf";
 import { renderDocx } from "@/lib/docs/render-docx";
+import { normPlaca, veiculoComMesmaPlaca } from "@/lib/placa";
 
 const loja: T.Loja = {
   nome: site.name,
@@ -89,11 +90,19 @@ async function receberTroca(sb: any, negId: string, avaliacaoId: string | null, 
   if (status !== "fechada" || !avaliacaoId) return;
   const { data: a } = await sb.from("avaliacoes").select("*").eq("id", avaliacaoId).single();
   if (!a || a.veiculo_estoque_id) return; // já recebido
+
+  // Se esse carro (mesma placa) já está no estoque, apenas vincula — não duplica.
+  const jaExiste = await veiculoComMesmaPlaca(sb, a.placa);
+  if (jaExiste) {
+    await sb.from("avaliacoes").update({ veiculo_estoque_id: jaExiste.id, status: "usado" }).eq("id", avaliacaoId);
+    return;
+  }
+
   const slug = kebab(`${a.marca}-${a.modelo}-${a.ano_modelo ?? ""}`) + "-" + Math.random().toString(36).slice(2, 7);
   const { data: novo, error } = await sb.from("veiculos").insert({
     marca: a.marca, modelo: a.modelo, versao: a.versao, ano_fab: a.ano_fab, ano_modelo: a.ano_modelo,
     km: a.km ?? 0, preco: a.valor_avaliado ?? 0, cor: a.cor, combustivel: a.combustivel,
-    placa: a.placa, renavam: a.renavam, chassi: a.chassi, status: "disponivel", origem: "troca",
+    placa: normPlaca(a.placa), renavam: a.renavam, chassi: a.chassi, status: "disponivel", origem: "troca",
     fotos: Array.isArray(a.fotos) ? a.fotos : [], slug,
   }).select("id").single();
   if (error || !novo) return;

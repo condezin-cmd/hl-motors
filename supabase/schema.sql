@@ -86,6 +86,14 @@ create table if not exists public.veiculos (
 );
 create index if not exists veiculos_status_idx on public.veiculos (status);
 create index if not exists veiculos_destaque_idx on public.veiculos (destaque);
+-- Impede dois veículos ATIVOS com a mesma placa (identidade real do carro).
+-- Ignora placas-curinga (preenchimento "sem placa") e registros vendidos/inativos.
+create unique index if not exists veiculos_placa_ativa_uidx
+on public.veiculos (upper(regexp_replace(placa,'[^A-Za-z0-9]','','g')))
+where placa is not null
+  and status not in ('vendido','inativo')
+  and length(regexp_replace(placa,'[^A-Za-z0-9]','','g')) = 7
+  and upper(regexp_replace(placa,'[^A-Za-z0-9]','','g')) not in ('AAA0000','ABC0000','ABC1234','XXX0000','AAA0A00','0000000','1111111');
 
 -- ---------- Vendas ----------
 create table if not exists public.vendas (
@@ -202,3 +210,5 @@ create policy "veiculos_storage_write" on storage.objects for all to authenticat
 -- documentos: só autenticado
 create policy "documentos_storage_auth" on storage.objects for all to authenticated
   using (bucket_id = 'documentos') with check (bucket_id = 'documentos');
+
+1
