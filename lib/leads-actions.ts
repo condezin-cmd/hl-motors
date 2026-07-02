@@ -23,31 +23,6 @@ async function resolverVeiculoId(sb: any, ref?: string | null): Promise<string |
   return data?.id ?? null;
 }
 
-// Registra interesse a partir de um clique nos botões de WhatsApp (sem contato
-// digitado — o contato chega pela própria conversa). Entra no funil como "novo".
-export async function registrarInteresse(input: {
-  veiculo_id?: string | null;
-  veiculo_texto?: string | null;
-  mensagem?: string | null;
-}): Promise<{ ok: boolean }> {
-  try {
-    const sb = await createReadClient();
-    const veiculoId = await resolverVeiculoId(sb, input.veiculo_id);
-    await sb.from("leads").insert({
-      origem: "site",
-      canal_detalhe: "WhatsApp direto",
-      nome: null,
-      telefone: null,
-      veiculo_id: veiculoId,
-      veiculo_texto: (input.veiculo_texto ?? "").trim() || null,
-      mensagem: (input.mensagem ?? "").trim() || null,
-      status: "novo",
-    });
-    return { ok: true };
-  } catch {
-    return { ok: false };
-  }
-}
 
 // Grava um lead vindo do site público (RLS permite insert anônimo).
 export async function registrarLeadPublico(input: LeadPublicoInput): Promise<{ ok: boolean }> {
