@@ -9,6 +9,7 @@ import * as T from "@/lib/docs/templates";
 import { renderPdf } from "@/lib/docs/render-pdf";
 import { renderDocx } from "@/lib/docs/render-docx";
 import { normPlaca, veiculoComMesmaPlaca } from "@/lib/placa";
+import { moverParaLixeira } from "@/lib/lixeira";
 
 const loja: T.Loja = {
   nome: site.name,
@@ -164,7 +165,7 @@ export async function setNegociacaoStatus(id: string, status: string) {
 
 export async function deleteNegociacao(id: string) {
   const sb = await createReadClient();
-  await sb.from("negociacoes").delete().eq("id", id);
+  await moverParaLixeira(sb, "negociacoes", id);
   revalidatePath("/admin/negociacoes");
   redirect("/admin/negociacoes");
 }

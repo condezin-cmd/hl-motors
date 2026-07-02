@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createReadClient } from "@/lib/supabase/server";
+import { moverParaLixeira } from "@/lib/lixeira";
 
 function num(v: string) {
   return Number(String(v).replace(/[^\d,.-]/g, "").replace(/\.(?=\d{3})/g, "").replace(",", ".")) || 0;
@@ -26,7 +27,7 @@ export async function toggleGastoFixo(id: string, ativo: boolean) {
 
 export async function deleteGastoFixo(id: string) {
   const sb = await createReadClient();
-  await sb.from("gastos_fixos").delete().eq("id", id);
+  await moverParaLixeira(sb, "gastos_fixos", id);
   revalidatePath("/admin/financeiro/fixos");
 }
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createReadClient } from "@/lib/supabase/server";
+import { moverParaLixeira } from "@/lib/lixeira";
 
 function parse(formData: FormData) {
   const g = (k: string) => String(formData.get(k) ?? "").trim();
@@ -59,6 +60,6 @@ export async function updateAvaliacao(id: string, _prev: unknown, formData: Form
 
 export async function deleteAvaliacao(id: string) {
   const supabase = await createReadClient();
-  await supabase.from("avaliacoes").delete().eq("id", id);
+  await moverParaLixeira(supabase, "avaliacoes", id);
   revalidatePath("/admin/avaliacoes");
 }

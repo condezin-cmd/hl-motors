@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createReadClient } from "@/lib/supabase/server";
 import { catByKey } from "@/lib/financeiro";
+import { moverParaLixeira } from "@/lib/lixeira";
 
 function parse(formData: FormData) {
   const g = (k: string) => String(formData.get(k) ?? "").trim();
@@ -35,6 +36,6 @@ export async function createLancamento(_prev: unknown, formData: FormData) {
 
 export async function deleteLancamento(id: string) {
   const sb = await createReadClient();
-  await sb.from("lancamentos").delete().eq("id", id);
+  await moverParaLixeira(sb, "lancamentos", id);
   revalidatePath("/admin/financeiro");
 }

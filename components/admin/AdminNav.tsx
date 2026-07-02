@@ -15,6 +15,7 @@ const base = [
   { href: "/admin/avaliacoes", label: "Avaliações", icon: "◈" },
   { href: "/admin/documentos", label: "Documentos", icon: "▣" },
   { href: "/admin/consignacao", label: "Consignação", icon: "◆" },
+  { href: "/admin/lixeira", label: "Lixeira", icon: "♺" },
 ];
 
 export function AdminNav() {

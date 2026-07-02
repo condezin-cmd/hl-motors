@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createReadClient } from "@/lib/supabase/server";
+import { moverParaLixeira } from "@/lib/lixeira";
 
 const fields = [
   "nome", "cpf", "rg", "orgao_emissor", "data_nascimento", "nacionalidade",
@@ -46,6 +47,6 @@ export async function updateCliente(id: string, _prev: unknown, formData: FormDa
 
 export async function deleteCliente(id: string) {
   const supabase = await createReadClient();
-  await supabase.from("clientes").delete().eq("id", id);
+  await moverParaLixeira(supabase, "clientes", id);
   revalidatePath("/admin/clientes");
 }

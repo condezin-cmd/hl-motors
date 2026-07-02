@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createReadClient } from "@/lib/supabase/server";
+import { moverParaLixeira } from "@/lib/lixeira";
 
 export async function setLeadStatus(id: string, status: string) {
   const sb = await createReadClient();
@@ -12,7 +13,7 @@ export async function setLeadStatus(id: string, status: string) {
 
 export async function deleteLead(id: string) {
   const sb = await createReadClient();
-  await sb.from("leads").delete().eq("id", id);
+  await moverParaLixeira(sb, "leads", id);
   revalidatePath("/admin/leads");
 }
 

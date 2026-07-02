@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createReadClient } from "@/lib/supabase/server";
 import { SocarraoClient, socarraoVehicleToVeiculo } from "@/lib/integrations/socarrao";
 import { normPlaca, veiculoComMesmaPlaca } from "@/lib/placa";
+import { moverParaLixeira } from "@/lib/lixeira";
 
 function kebab(s: string) {
   return s
@@ -99,7 +100,7 @@ export async function updateVeiculo(id: string, _prev: unknown, formData: FormDa
 
 export async function deleteVeiculo(id: string) {
   const supabase = await createReadClient();
-  await supabase.from("veiculos").delete().eq("id", id);
+  await moverParaLixeira(supabase, "veiculos", id);
   revalidatePath("/admin/estoque");
   revalidatePath("/");
 }

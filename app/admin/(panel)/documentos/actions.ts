@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createReadClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { moverParaLixeira } from "@/lib/lixeira";
 import { site } from "@/lib/site";
 import * as T from "@/lib/docs/templates";
 import { renderPdf } from "@/lib/docs/render-pdf";
@@ -98,10 +99,10 @@ export async function gerarDocumento(_prev: unknown, formData: FormData) {
   redirect("/admin/documentos");
 }
 
-export async function deleteDocumento(id: string, pdfPath?: string, docxPath?: string) {
+export async function deleteDocumento(id: string, _pdfPath?: string, _docxPath?: string) {
+  // Vai para a lixeira mantendo os arquivos (restauração volta a apontar para eles).
+  // Os arquivos só são apagados na exclusão definitiva.
   const admin = createAdminClient();
-  const paths = [pdfPath, docxPath].filter(Boolean) as string[];
-  if (paths.length) await admin.storage.from("documentos").remove(paths);
-  await admin.from("documentos").delete().eq("id", id);
+  await moverParaLixeira(admin, "documentos", id);
   revalidatePath("/admin/documentos");
 }
